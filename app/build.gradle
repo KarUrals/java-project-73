@@ -5,9 +5,8 @@ plugins {
 	id 'jacoco'
 	id 'org.springframework.boot' version '3.0.6'
 	id 'io.spring.dependency-management' version '1.1.0'
-	id 'org.liquibase.gradle' version '2.2.0'
+	id 'org.liquibase.gradle' version '2.0.4'
 }
-
 group = 'hexlet.code'
 version = '1.0-SNAPSHOT'
 sourceCompatibility = '17'
@@ -41,20 +40,26 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
+// Настраиваем таску diffChangeLog таким образом,
+// чтобы миграции учитывали изменения в моделях
+diffChangeLog {
+	dependsOn compileJava
+}
+
 // Настраиваем Liquibase
 liquibase {
 	activities {
 		main {
 			// Указываем путь, по которому будет сгенерирован файл миграции
-			changeLogFile 'src/main/resources/db/changelog/changelog-master.xml'
-			// Указывем источник, с которым будут сравниваться изменения
+			changelogFile 'src/main/resources/db/changelog/changelog-master.xml'
+			// Указываем источник, с которым будут сравниваться изменения
 			// Это база данных, изначально она пустая
 			url 'jdbc:h2:./taskManager'
 			// Имя пользователя и пароль для подключения к базе
 			username ''
 			password ''
 			// Сравниваем с моделями, задавая пакет
-			referenceUrl 'hibernate:spring:io.hexlet.javaspringblog.model.' +
+			referenceUrl 'hibernate:spring:hexlet.code.model.' +
 					// Указываем диалект
 					'?dialect=org.hibernate.dialect.H2Dialect' +
 					// Указываем правила именования таблиц и столбцов,
@@ -72,6 +77,7 @@ jacocoTestReport {
 
 tasks.named('test') {
 	useJUnitPlatform()
+	finalizedBy jacocoTestReport
 }
 
 // Таска нужная для деплоя
