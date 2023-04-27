@@ -5,6 +5,7 @@ plugins {
 	id 'jacoco'
 	id 'org.springframework.boot' version '3.0.6'
 	id 'io.spring.dependency-management' version '1.1.0'
+	id 'org.liquibase.gradle' version '2.2.0'
 }
 
 group = 'hexlet.code'
@@ -31,7 +32,36 @@ dependencies {
 	runtimeOnly 'com.h2database:h2'
 	runtimeOnly 'org.postgresql:postgresql'
 
+	liquibaseRuntime 'org.liquibase:liquibase-core:4.16.1'
+	liquibaseRuntime 'info.picocli:picocli:4.6.1'
+	liquibaseRuntime 'org.liquibase.ext:liquibase-hibernate5:3.6'
+	liquibaseRuntime sourceSets.main.output
+	liquibaseRuntime group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+// Настраиваем Liquibase
+liquibase {
+	activities {
+		main {
+			// Указываем путь, по которому будет сгенерирован файл миграции
+			changeLogFile 'src/main/resources/db/changelog/changelog-master.xml'
+			// Указывем источник, с которым будут сравниваться изменения
+			// Это база данных, изначально она пустая
+			url 'jdbc:h2:./taskManager'
+			// Имя пользователя и пароль для подключения к базе
+			username ''
+			password ''
+			// Сравниваем с моделями, задавая пакет
+			referenceUrl 'hibernate:spring:io.hexlet.javaspringblog.model.' +
+					// Указываем диалект
+					'?dialect=org.hibernate.dialect.H2Dialect' +
+					// Указываем правила именования таблиц и столбцов,
+					// чтобы они соответствовали правилам Spring
+					'&hibernate.physical_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy'
+		}
+	}
 }
 
 jacocoTestReport {
