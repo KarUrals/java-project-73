@@ -20,7 +20,4 @@
             <column name="created_at" type="TIMESTAMP"/>
         </createTable>
     </changeSet>
-    <changeSet author="KarUrals (generated)" id="1668574001760-2">
-        <addUniqueConstraint columnNames="email" constraintName="UC_USERSEMAIL_COL" tableName="users"/>
-    </changeSet>
 </databaseChangeLog>
