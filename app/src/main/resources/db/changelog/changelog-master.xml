@@ -5,10 +5,10 @@
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="usersPK"/>
             </column>
-            <column name="firstName" type="VARCHAR(255)">
+            <column name="first_name" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="lastName" type="VARCHAR(255)">
+            <column name="last_name" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
             <column name="email" type="VARCHAR(255)">
