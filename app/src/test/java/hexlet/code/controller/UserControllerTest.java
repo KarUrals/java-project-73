@@ -10,7 +10,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -30,7 +33,7 @@ public class UserControllerTest {
         assertThat(response.getContentType()).isEqualTo(MediaType.APPLICATION_JSON.toString());
         assertThat(response.getContentAsString()).contains("John", "Smith", "j.smith@ya.ru");
         assertThat(response.getContentAsString()).contains("Jack", "Doe", "doe.j@ya.ru");
-        assertThat(response.getContentAsString()).contains("Jessica","Simpson", "simpson@ya.ru");
+        assertThat(response.getContentAsString()).contains("Jessica", "Simpson", "simpson@ya.ru");
         assertThat(response.getContentAsString()).contains("Robert", "Lock", "r.lock@ya.ru");
     }
 
@@ -53,13 +56,12 @@ public class UserControllerTest {
                 .perform(
                         post("/api/users")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content("{" +
-                                        "\"firstName\": \"Johny\", " +
-                                        "\"lastName\": \"Walker\", " +
-                                        "\"email\": \"sdfs@ya.ru\", " +
-                                        "\"password\": \"sdf68q\", " +
-                                        "\"createdAt\": \"2023-04-28T15:55:22.342+00:00\"" +
-                                        "}")
+                                .content("{\"firstName\": \"Johny\", "
+                                        + "\"lastName\": \"Walker\", "
+                                        + "\"email\": \"sdfs@ya.ru\", "
+                                        + "\"password\": \"sdf68q\", "
+                                        + "\"createdAt\": \"2023-04-28T15:55:22.342+00:00\""
+                                        + "}")
                 )
                 .andReturn()
                 .getResponse();
@@ -82,12 +84,11 @@ public class UserControllerTest {
                 .perform(
                         put("/api/users/1")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content("{" +
-                                        "\"firstName\": \"Johny\", " +
-                                        "\"lastName\": \"Walker\", " +
-                                        "\"email\": \"sdfs@ya.ru\", " +
-                                        "\"password\": \"sdf68q\"" +
-                                        "}")
+                                .content("{\"firstName\": \"Johny\", "
+                                        + "\"lastName\": \"Walker\", "
+                                        + "\"email\": \"sdfs@ya.ru\", "
+                                        + "\"password\": \"sdf68q\""
+                                        + "}")
                 )
                 .andReturn()
                 .getResponse();
