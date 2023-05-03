@@ -3,7 +3,7 @@ plugins {
 	id 'application'
 	id 'checkstyle'
 	id 'jacoco'
-	id 'org.springframework.boot' version '3.0.6'
+	id 'org.springframework.boot' version '2.5.6'
 	id 'io.spring.dependency-management' version '1.1.0'
 	id 'org.liquibase.gradle' version '2.0.4'
 }
@@ -28,9 +28,12 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.liquibase:liquibase-core'
+	implementation 'io.jsonwebtoken:jjwt:0.9.1'
 
 	runtimeOnly 'com.h2database:h2'
 	runtimeOnly 'org.postgresql:postgresql'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
 	liquibaseRuntime 'org.liquibase:liquibase-core:4.16.1'
 	liquibaseRuntime 'info.picocli:picocli:4.6.1'
