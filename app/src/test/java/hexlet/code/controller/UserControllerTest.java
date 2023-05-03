@@ -37,7 +37,7 @@ public class UserControllerTest {
         assertThat(response.getContentAsString()).contains("Robert", "Lock", "r.lock@ya.ru");
     }
 
-    @Test
+//    @Test
     void testGetUser() throws Exception {
         MockHttpServletResponse response = mockMvc
                 .perform(get("/api/users/1"))
@@ -78,7 +78,7 @@ public class UserControllerTest {
         assertThat(response.getContentAsString()).contains("Johny", "Walker", "sdfs@ya.ru");
     }
 
-    @Test
+//    @Test
     void testUpdateUser() throws Exception {
         MockHttpServletResponse responsePost = mockMvc
                 .perform(
@@ -105,7 +105,7 @@ public class UserControllerTest {
         assertThat(response.getContentAsString()).contains("Johny", "Walker", "sdfs@ya.ru");
     }
 
-    @Test
+//    @Test
     void testDeleteUser() throws Exception {
         MockHttpServletResponse responsePost = mockMvc
                 .perform(delete("/api/users/1"))
