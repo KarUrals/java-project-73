@@ -4,7 +4,7 @@ import hexlet.code.dto.UserDto;
 import hexlet.code.entity.User;
 import hexlet.code.repository.UserRepository;
 import hexlet.code.service.UserService;
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
