@@ -7,6 +7,7 @@ import hexlet.code.service.UserService;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -33,6 +34,9 @@ import static org.springframework.http.HttpStatus.CREATED;
 public class UserController {
     public static final String USER_CONTROLLER_PATH = "/users";
     public static final String ID = "/{id}";
+    private static final String ONLY_OWNER_BY_ID = """
+            @userRepository.findById(#id).get().getEmail() == authentication.getName()
+        """;
 
     private final UserRepository userRepository;
     private final UserService userService;
@@ -56,11 +60,13 @@ public class UserController {
     }
 
     @PutMapping(path = ID)
+    @PreAuthorize(ONLY_OWNER_BY_ID)
     public User update(@PathVariable final long id, @RequestBody @Valid final UserDto dto) {
         return userService.updateCurrentUser(id, dto);
     }
 
     @DeleteMapping(path = ID)
+    @PreAuthorize(ONLY_OWNER_BY_ID)
     public void delete(@PathVariable final long id) {
         userRepository.deleteById(id);
     }
