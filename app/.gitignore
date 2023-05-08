@@ -37,3 +37,8 @@ out/
 .vscode/
 
 *.db
+
+### Frontend ###
+node
+frontend/build
+frontend/node_modules
