@@ -1,14 +1,31 @@
-base-url: /api
+#base-url: /api
+#
+#spring:
+#  # База данных для тестов
+#  datasource:
+#    # В тестах используем базу данных Н2 в памяти
+#    url: jdbc:h2:mem:db
+#    username:
+#    password:
+#
+#  # Используем тот же файл миграции, что и для базы данных в приложении
+#  liquibase:
+#    enabled: true
+#    change-log: classpath:db/changelog/changelog-master.xml
+base-url: ""
 
 spring:
-  # База данных для тестов
-  datasource:
-    # В тестах используем базу данных Н2 в памяти
-    url: jdbc:h2:mem:db
-    username:
-    password:
+  application:
+    name: hexletBlog
 
-  # Используем тот же файл миграции, что и для базы данных в приложении
+  jpa:
+    show-sql: true
+
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/changelog-master.xml
+
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true

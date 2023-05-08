@@ -5,6 +5,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -15,6 +16,7 @@ import java.util.Optional;
 
 import static hexlet.code.config.security.SecurityConfig.DEFAULT_AUTHORITIES;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.SPRING_SECURITY_FORM_USERNAME_KEY;
 
 public class JWTAuthorizationFilter extends OncePerRequestFilter {
@@ -45,16 +47,6 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
                 .map(this::buildAuthToken)
                 .orElseThrow();
 
-//        final String header = request.getHeader(AUTHORIZATION);
-//        final String token = header.replaceFirst("^Bearer", "").trim();
-//        final String username = jwtUtils.readJWSToken(token)
-//                .get(SPRING_SECURITY_FORM_USERNAME_KEY)
-//                .toString();
-//        final var authToken = new UsernamePasswordAuthenticationToken(
-//                username,
-//                null,
-//                DEFAULT_AUTHORITIES
-//        );
         SecurityContextHolder.getContext().setAuthentication(authToken);
         filterChain.doFilter(request, response);
     }
