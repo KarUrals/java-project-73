@@ -8,7 +8,6 @@ import hexlet.code.entity.User;
 import hexlet.code.repository.UserRepository;
 import hexlet.code.utils.TestUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +25,21 @@ import static hexlet.code.config.SpringConfigForIT.TEST_PROFILE;
 import static hexlet.code.config.security.SecurityConfig.LOGIN;
 import static hexlet.code.controller.UserController.ID;
 import static hexlet.code.controller.UserController.USER_CONTROLLER_PATH;
-import static hexlet.code.utils.TestUtils.*;
+import static hexlet.code.utils.TestUtils.FIRST_USER;
+import static hexlet.code.utils.TestUtils.NOT_VALID_EMAIL_USER;
+import static hexlet.code.utils.TestUtils.NOT_VALID_FIRSTNAME_USER;
+import static hexlet.code.utils.TestUtils.NOT_VALID_LASTNAME_USER;
+import static hexlet.code.utils.TestUtils.NOT_VALID_PASSWORD_USER;
+import static hexlet.code.utils.TestUtils.SECOND_USER;
+import static hexlet.code.utils.TestUtils.asJson;
+import static hexlet.code.utils.TestUtils.getInfoFromJson;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -188,7 +199,7 @@ public class UserControllerTest {
         assertFalse(response.getContentAsString().contains(FIRST_USER.getPassword()));
         assertFalse(response.getContentAsString().contains(SECOND_USER.getPassword()));
 
-        final List<User> users = getInfoFromJson(response.getContentAsString(), new TypeReference<>() {});
+        final List<User> users = getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
         assertThat(users).hasSize(2);
     }
 
@@ -206,7 +217,7 @@ public class UserControllerTest {
                 .andReturn()
                 .getResponse();
 
-        final User actualUser = getInfoFromJson(response.getContentAsString(), new TypeReference<>() {});
+        final User actualUser = getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
 
         assertEquals(expectedUser.getId(), actualUser.getId());
         assertEquals(expectedUser.getEmail(), actualUser.getEmail());
