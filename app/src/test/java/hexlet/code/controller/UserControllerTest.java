@@ -42,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.SPRING_SECURITY_FORM_USERNAME_KEY;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -76,7 +77,6 @@ public class UserControllerTest {
                 FIRST_USER.getEmail(),
                 FIRST_USER.getPassword()
         );
-        final String expectedToken = jwtUtils.createJWSToken(Map.of("username", FIRST_USER.getEmail()));
 
         final var loginRequest = post(LOGIN)
                 .content(asJson(loginDto))
@@ -87,7 +87,14 @@ public class UserControllerTest {
                 .andReturn()
                 .getResponse();
 
-        assertEquals(expectedToken, response.getContentAsString().trim());
+        final String token = response.getContentAsString().trim();
+
+        final String expectedUsername = FIRST_USER.getEmail();
+        final String actualUsername = jwtUtils.readJWSToken(token)
+                .get(SPRING_SECURITY_FORM_USERNAME_KEY)
+                .toString();
+
+        assertEquals(expectedUsername, actualUsername);
     }
 
     @Test
