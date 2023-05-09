@@ -1,0 +1,124 @@
+plugins {
+	id 'java'
+	id 'application'
+	id 'checkstyle'
+	id 'jacoco'
+	id 'org.springframework.boot' version '2.5.6'
+	id 'io.spring.dependency-management' version '1.1.0'
+	id 'org.liquibase.gradle' version '2.0.4'
+	// Сборщик фронтенда
+	id 'org.siouan.frontend-jdk11' version '6.0.0'
+}
+group = 'hexlet.code'
+version = '1.0-SNAPSHOT'
+sourceCompatibility = '17'
+
+repositories {
+	mavenCentral()
+}
+
+application {
+	mainClass = 'hexlet.code.AppApplication'
+}
+
+dependencies {
+	compileOnly 'org.projectlombok:lombok:1.18.26'
+	annotationProcessor 'org.projectlombok:lombok:1.18.26'
+
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.liquibase:liquibase-core'
+	implementation 'io.jsonwebtoken:jjwt:0.9.1'
+	implementation 'org.springframework:spring-web'
+
+	runtimeOnly 'com.h2database:h2'
+	runtimeOnly 'org.postgresql:postgresql'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+	liquibaseRuntime 'org.liquibase:liquibase-core:4.16.1'
+	liquibaseRuntime 'info.picocli:picocli:4.6.1'
+	liquibaseRuntime 'org.liquibase.ext:liquibase-hibernate5:3.6'
+	liquibaseRuntime sourceSets.main.output
+	liquibaseRuntime group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+// Настраиваем таску diffChangeLog таким образом,
+// чтобы миграции учитывали изменения в моделях
+diffChangeLog {
+	dependsOn compileJava
+}
+
+// Настраиваем Liquibase
+liquibase {
+	activities {
+		main {
+			// Указываем путь, по которому будет сгенерирован файл миграции
+			changelogFile 'src/main/resources/db/changelog/changelog-master.xml'
+			// Указываем источник, с которым будут сравниваться изменения
+			// Это база данных, изначально она пустая
+			url 'jdbc:h2:./taskManager'
+			// Имя пользователя и пароль для подключения к базе
+			username ''
+			password ''
+			// Сравниваем с моделями, задавая пакет
+			referenceUrl 'hibernate:spring:hexlet.code.model.' +
+					// Указываем диалект
+					'?dialect=org.hibernate.dialect.H2Dialect' +
+					// Указываем правила именования таблиц и столбцов,
+					// чтобы они соответствовали правилам Spring
+					'&hibernate.physical_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy'
+		}
+	}
+}
+
+jacocoTestReport {
+	reports {
+		xml.required = true
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+	finalizedBy jacocoTestReport
+}
+
+// Таска нужная для деплоя
+task stage(dependsOn: ['clean', 'installDist'])
+installDist.mustRunAfter clean
+
+// Сборка фронтенда.
+// Выполняется только если ничего не изменилось.
+// *****************************************************************************
+frontend {
+	nodeVersion = '16.13.1'
+	installScript = 'install'
+	assembleScript = 'run build'
+	packageJsonDirectory = file("${projectDir}/frontend")
+}
+
+def configFrontendTasks = {
+	inputs.files(fileTree("$projectDir/frontend").exclude('build', 'node_modules'))
+	outputs.dir("$buildDir/resources/main/static")
+}
+
+assembleFrontend {
+	configure configFrontendTasks
+
+	doLast {
+		copy {
+			from "$projectDir/frontend/build"
+			into "$buildDir/resources/main/static"
+		}
+	}
+}
+
+installFrontend {
+	configure configFrontendTasks
+}
+
+processResources.dependsOn assembleFrontend
