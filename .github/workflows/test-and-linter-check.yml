@@ -20,6 +20,7 @@ jobs:
         with:
           arguments: build
           build-root-directory: app
+          workingDirectory: app
 
       - name: Publish code coverage
         uses: paambaati/codeclimate-action@v3.2.0
