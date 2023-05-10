@@ -47,8 +47,4 @@ public class User {
     @CreationTimestamp
     @Temporal(TIMESTAMP)
     private Date createdAt;
-
-    public User(final Long id) {
-        this.id = id;
-    }
 }

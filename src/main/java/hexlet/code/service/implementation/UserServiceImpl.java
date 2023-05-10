@@ -1,9 +1,10 @@
-package hexlet.code.service;
+package hexlet.code.service.implementation;
 
-import hexlet.code.UserAlreadyExistsException;
+import hexlet.code.AlreadyExistsException;
 import hexlet.code.dto.UserDto;
 import hexlet.code.entity.User;
 import hexlet.code.repository.UserRepository;
+import hexlet.code.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -28,7 +29,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     public User createNewUser(UserDto userDto) {
         final Optional<User> existingUser = userRepository.findByEmail(userDto.getEmail());
         if (existingUser.isPresent()) {
-            throw new UserAlreadyExistsException("User with email \"" + userDto.getEmail() + "\" already exists");
+            throw new AlreadyExistsException("User with email \"" + userDto.getEmail() + "\" already exists");
         } else {
             final User user = new User();
             user.setEmail(userDto.getEmail());

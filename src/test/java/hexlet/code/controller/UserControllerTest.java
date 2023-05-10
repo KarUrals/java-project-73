@@ -32,7 +32,6 @@ import static hexlet.code.utils.TestUtils.NOT_VALID_PASSWORD_USER;
 import static hexlet.code.utils.TestUtils.SECOND_USER;
 import static hexlet.code.utils.TestUtils.asJson;
 import static hexlet.code.utils.TestUtils.getInfoFromJson;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -194,6 +193,7 @@ public class UserControllerTest {
     public void testGetAllUsers() throws Exception {
         utils.createNewUser(FIRST_USER);
         utils.createNewUser(SECOND_USER);
+        final int expectedCount = (int) userRepository.count();
 
         final var getRequest = get(USER_CONTROLLER_PATH);
 
@@ -206,7 +206,7 @@ public class UserControllerTest {
         assertFalse(response.getContentAsString().contains(SECOND_USER.getPassword()));
 
         final List<User> users = getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
-        assertThat(users).hasSize(2);
+        assertEquals(expectedCount, users.size());
     }
 
     @Test
@@ -368,6 +368,8 @@ public class UserControllerTest {
     public void testDeleteUserUnauthorizedFails() throws Exception {
         utils.createNewUser(FIRST_USER);
         utils.createNewUser(SECOND_USER);
+        final int expectedCount = (int) userRepository.count();
+
         final String firstUserEmail = FIRST_USER.getEmail();
         final String secondUserEmail = SECOND_USER.getEmail();
         final Long firstUserId = utils.getUserByEmail(firstUserEmail).getId();
@@ -377,6 +379,6 @@ public class UserControllerTest {
         utils.performAuthorizedRequest(deleteRequest, secondUserEmail)
                 .andExpect(status().isForbidden());
 
-        assertEquals(2, userRepository.count());
+        assertEquals(expectedCount, userRepository.count());
     }
 }
