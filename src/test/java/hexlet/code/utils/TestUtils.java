@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.component.JWTUtils;
+import hexlet.code.dto.TaskStatusDto;
 import hexlet.code.dto.UserDto;
 import hexlet.code.entity.User;
 import hexlet.code.repository.UserRepository;
@@ -14,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
+import static hexlet.code.controller.TaskStatusController.TASK_STATUS_CONTROLLER_PATH;
 import static hexlet.code.controller.UserController.USER_CONTROLLER_PATH;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -63,6 +65,18 @@ public class TestUtils {
             "k@"
     );
 
+    public static final TaskStatusDto NEW_TASK_STATUS = new TaskStatusDto(
+            "new"
+    );
+
+    public static final TaskStatusDto AT_WORK_TASK_STATUS = new TaskStatusDto(
+            "at work"
+    );
+
+    public static final TaskStatusDto NOT_VALID_TASK_STATUS = new TaskStatusDto(
+            ""
+    );
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -87,6 +101,14 @@ public class TestUtils {
                 .contentType(APPLICATION_JSON);
 
         return performUnauthorizedRequest(request);
+    }
+
+    public ResultActions createNewTaskStatus(final TaskStatusDto taskStatusDto, final String email) throws Exception {
+        final var request = post(TASK_STATUS_CONTROLLER_PATH)
+                .content(asJson(taskStatusDto))
+                .contentType(APPLICATION_JSON);
+
+        return performAuthorizedRequest(request, email);
     }
 
     public ResultActions performAuthorizedRequest(
