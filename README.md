@@ -1,5 +1,5 @@
 # Task Manager
-This project is a task management system. It allows you to set tasks, assign performers and change their statuses. Registration and authentication are required to work with the system..
+This project is a task management system. It allows you to set tasks, assign performers and change their statuses. Registration and authentication are required to work with the system.
 
 The site is deployed on [Render](https://task-manager-hrgi.onrender.com)
 ___
