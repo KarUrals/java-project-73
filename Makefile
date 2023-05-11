@@ -27,6 +27,11 @@ lint:
 update-deps:
 	./gradlew useLatestVersions
 
+generate-migrations:
+	gradle diffChangeLog
+
+db-migrate:
+	./gradlew update
 
 build-run: build run
 
