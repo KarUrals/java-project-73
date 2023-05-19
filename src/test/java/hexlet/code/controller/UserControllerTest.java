@@ -16,7 +16,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -32,6 +31,7 @@ import static hexlet.code.utils.TestUtils.NOT_VALID_PASSWORD_USER;
 import static hexlet.code.utils.TestUtils.SECOND_USER;
 import static hexlet.code.utils.TestUtils.asJson;
 import static hexlet.code.utils.TestUtils.getInfoFromJson;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -51,7 +51,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles(TEST_PROFILE)
 @ExtendWith(SpringExtension.class)
-@Transactional
 public class UserControllerTest {
     @Autowired
     private UserRepository userRepository;
@@ -132,7 +131,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testCreateUserWithNotValidEmail() throws Exception {
+    public void testCreateUserWithNotValidEmailFail() throws Exception {
         final var createRequest = post(USER_CONTROLLER_PATH)
                 .content(asJson(NOT_VALID_EMAIL_USER))
                 .contentType(APPLICATION_JSON);
@@ -144,7 +143,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testCreateUserWithNotValidFirstName() throws Exception {
+    public void testCreateUserWithNotValidFirstNameFail() throws Exception {
         final var createRequest = post(USER_CONTROLLER_PATH)
                 .content(asJson(NOT_VALID_FIRSTNAME_USER))
                 .contentType(APPLICATION_JSON);
@@ -156,7 +155,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testCreateUserWithNotValidLastName() throws Exception {
+    public void testCreateUserWithNotValidLastNameFail() throws Exception {
         final var createRequest = post(USER_CONTROLLER_PATH)
                 .content(asJson(NOT_VALID_LASTNAME_USER))
                 .contentType(APPLICATION_JSON);
@@ -168,7 +167,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testCreateUserWithNotValidPassword() throws Exception {
+    public void testCreateUserWithNotValidPasswordFail() throws Exception {
         final var createRequest = post(USER_CONTROLLER_PATH)
                 .content(asJson(NOT_VALID_PASSWORD_USER))
                 .contentType(APPLICATION_JSON);
@@ -233,6 +232,22 @@ public class UserControllerTest {
     }
 
     @Test
+    public void testGetNonExistUserByIdFail() throws Exception {
+        utils.createNewUser(FIRST_USER);
+        final String email = FIRST_USER.getEmail();
+        final User expectedUser = utils.getUserByEmail(email);
+        final Long expectedUserId = expectedUser.getId();
+
+        final Long nonExistUserId = expectedUserId + 1;
+        assertFalse(userRepository.findById(nonExistUserId).isPresent());
+
+        final var getRequest = get(USER_CONTROLLER_PATH + ID, nonExistUserId);
+
+        utils.performAuthorizedRequest(getRequest, email)
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     public void testUpdateUser() throws Exception {
         utils.createNewUser(FIRST_USER);
         final String email = FIRST_USER.getEmail();
@@ -255,7 +270,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testUpdateAnotherUser() throws Exception {
+    public void testUpdateAnotherUserFail() throws Exception {
         utils.createNewUser(FIRST_USER);
         utils.createNewUser(SECOND_USER);
         final String firstUserEmail = FIRST_USER.getEmail();
@@ -271,7 +286,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testUpdateUserWithNotValidEmail() throws Exception {
+    public void testUpdateUserWithNotValidEmailFail() throws Exception {
         utils.createNewUser(FIRST_USER);
         final String email = FIRST_USER.getEmail();
         final Long userId = utils.getUserByEmail(email).getId();
@@ -291,7 +306,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testUpdateUserWithNotValidFirstName() throws Exception {
+    public void testUpdateUserWithNotValidFirstNameFail() throws Exception {
         utils.createNewUser(FIRST_USER);
         final String email = FIRST_USER.getEmail();
         final Long userId = utils.getUserByEmail(email).getId();
@@ -311,7 +326,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testUpdateUserWithNotValidLastName() throws Exception {
+    public void testUpdateUserWithNotValidLastNameFail() throws Exception {
         utils.createNewUser(FIRST_USER);
         final String email = FIRST_USER.getEmail();
         final Long userId = utils.getUserByEmail(email).getId();
@@ -331,7 +346,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testUpdateUserWithNotValidPassword() throws Exception {
+    public void testUpdateUserWithNotValidPasswordFail() throws Exception {
         utils.createNewUser(FIRST_USER);
         final String email = FIRST_USER.getEmail();
         final Long userId = utils.getUserByEmail(email).getId();
@@ -351,6 +366,23 @@ public class UserControllerTest {
     }
 
     @Test
+    public void testUpdateNonExistUserFail() throws Exception {
+        utils.createNewUser(FIRST_USER);
+        final String email = FIRST_USER.getEmail();
+        final Long userId = utils.getUserByEmail(email).getId();
+
+        final Long nonExistUserId = userId + 1;
+        assertFalse(userRepository.findById(nonExistUserId).isPresent());
+
+        final var updateRequest = put(USER_CONTROLLER_PATH + ID, nonExistUserId)
+                .content(asJson(SECOND_USER))
+                .contentType(APPLICATION_JSON);
+
+        utils.performAuthorizedRequest(updateRequest, email)
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     public void testDeleteUser() throws Exception {
         utils.createNewUser(FIRST_USER);
         final String email = FIRST_USER.getEmail();
@@ -365,7 +397,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testDeleteUserUnauthorizedFails() throws Exception {
+    public void testDeleteAnotherUserFail() throws Exception {
         utils.createNewUser(FIRST_USER);
         utils.createNewUser(SECOND_USER);
         final int expectedCount = (int) userRepository.count();
@@ -380,5 +412,21 @@ public class UserControllerTest {
                 .andExpect(status().isForbidden());
 
         assertEquals(expectedCount, userRepository.count());
+        assertThat(userRepository.findById(firstUserId)).isPresent();
+    }
+
+    @Test
+    public void testDeleteNonExistUserFail() throws Exception {
+        utils.createNewUser(FIRST_USER);
+        final String email = FIRST_USER.getEmail();
+        final Long userId = utils.getUserByEmail(email).getId();
+
+        final Long nonExistUserId = userId + 1;
+        assertFalse(userRepository.findById(nonExistUserId).isPresent());
+
+        final var deleteRequest = delete(USER_CONTROLLER_PATH + ID, nonExistUserId);
+
+        utils.performAuthorizedRequest(deleteRequest, email)
+                .andExpect(status().isNotFound());
     }
 }

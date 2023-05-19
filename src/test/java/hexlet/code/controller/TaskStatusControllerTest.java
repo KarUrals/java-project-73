@@ -15,10 +15,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import static hexlet.code.config.SpringConfigForIT.TEST_PROFILE;
 import static hexlet.code.controller.TaskStatusController.TASK_STATUS_CONTROLLER_PATH;
@@ -30,15 +29,19 @@ import static hexlet.code.utils.TestUtils.NOT_VALID_TASK_STATUS;
 import static hexlet.code.utils.TestUtils.asJson;
 import static hexlet.code.utils.TestUtils.getInfoFromJson;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = SpringConfigForIT.class)
 @AutoConfigureMockMvc
 @ActiveProfiles(TEST_PROFILE)
 @ExtendWith(SpringExtension.class)
-@Transactional
 class TaskStatusControllerTest {
     private static String existingUserEmail;
     @Autowired
@@ -55,7 +58,6 @@ class TaskStatusControllerTest {
     @AfterEach
     public void clear() {
         utils.tearDown();
-        taskStatusRepository.deleteAll();
     }
 
     @Test
@@ -69,7 +71,7 @@ class TaskStatusControllerTest {
     }
 
     @Test
-    void testCreateNewTaskStatusWithNotValidFirstName() throws Exception {
+    void testCreateNewTaskStatusWithNotValidNameFail() throws Exception {
         Assertions.assertEquals(0, taskStatusRepository.count());
 
         utils.createNewTaskStatus(NOT_VALID_TASK_STATUS, existingUserEmail)
@@ -91,16 +93,16 @@ class TaskStatusControllerTest {
     }
 
     @Test
-    void testCreateNewTaskStatusUnauthorizedFails() throws Exception {
+    void testCreateNewTaskStatusUnauthorizedFail() throws Exception {
         Assertions.assertEquals(0, taskStatusRepository.count());
 
-        final var createRequest = MockMvcRequestBuilders.post(TASK_STATUS_CONTROLLER_PATH)
+        final var createRequest = post(TASK_STATUS_CONTROLLER_PATH)
                 .content(asJson(NEW_TASK_STATUS))
                 .contentType(APPLICATION_JSON);
 
         try {
             utils.performUnauthorizedRequest(createRequest);
-        } catch (Exception e) {
+        } catch (NoSuchElementException e) {
             assertThat(e.getMessage()).isEqualTo("No value present");
         }
 
@@ -113,7 +115,7 @@ class TaskStatusControllerTest {
         utils.createNewTaskStatus(AT_WORK_TASK_STATUS, existingUserEmail);
         final int expectedCount = (int) taskStatusRepository.count();
 
-        final var getRequest = MockMvcRequestBuilders.get(TASK_STATUS_CONTROLLER_PATH);
+        final var getRequest = get(TASK_STATUS_CONTROLLER_PATH);
 
         final var response = utils.performUnauthorizedRequest(getRequest)
                 .andExpect(status().isOk())
@@ -129,7 +131,7 @@ class TaskStatusControllerTest {
         utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
         final Long taskStatusId = taskStatusRepository.findAll().get(0).getId();
 
-        final var getRequest = MockMvcRequestBuilders.get(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusId);
+        final var getRequest = get(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusId);
 
         final var response = utils.performUnauthorizedRequest(getRequest)
                 .andExpect(status().isOk())
@@ -142,11 +144,26 @@ class TaskStatusControllerTest {
     }
 
     @Test
+    public void testGetNonExistTaskStatusByIdFail() throws Exception {
+        utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
+
+        final Long taskStatusId = taskStatusRepository.findAll().get(0).getId();
+
+        final Long nonExistTaskStatusId = taskStatusId + 1;
+        assertFalse(taskStatusRepository.findById(nonExistTaskStatusId).isPresent());
+
+        final var getRequest = get(TASK_STATUS_CONTROLLER_PATH + ID, nonExistTaskStatusId);
+
+        utils.performAuthorizedRequest(getRequest, existingUserEmail)
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void testUpdateTaskStatus() throws Exception {
         utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
         final Long taskStatusId = taskStatusRepository.findAll().get(0).getId();
 
-        final var updateRequest = MockMvcRequestBuilders.put(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusId)
+        final var updateRequest = put(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusId)
                 .content(asJson(AT_WORK_TASK_STATUS))
                 .contentType(APPLICATION_JSON);
 
@@ -159,11 +176,11 @@ class TaskStatusControllerTest {
     }
 
     @Test
-    void testUpdateTaskStatusWithNotValidName() throws Exception {
+    void testUpdateTaskStatusWithNotValidNameFail() throws Exception {
         utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
         final Long taskStatusId = taskStatusRepository.findAll().get(0).getId();
 
-        final var updateRequest = MockMvcRequestBuilders.put(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusId)
+        final var updateRequest = put(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusId)
                 .content(asJson(NOT_VALID_TASK_STATUS))
                 .contentType(APPLICATION_JSON);
 
@@ -175,17 +192,17 @@ class TaskStatusControllerTest {
     }
 
     @Test
-    void testUpdateTaskStatusUnauthorizedFails() throws Exception {
+    void testUpdateTaskStatusUnauthorizedFailsFail() throws Exception {
         utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
         final Long taskStatusId = taskStatusRepository.findAll().get(0).getId();
 
-        final var updateRequest = MockMvcRequestBuilders.put(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusId)
+        final var updateRequest = put(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusId)
                 .content(asJson(AT_WORK_TASK_STATUS))
                 .contentType(APPLICATION_JSON);
 
         try {
             utils.performUnauthorizedRequest(updateRequest);
-        } catch (Exception e) {
+        } catch (NoSuchElementException e) {
             assertThat(e.getMessage()).isEqualTo("No value present");
         }
 
@@ -195,11 +212,26 @@ class TaskStatusControllerTest {
     }
 
     @Test
+    public void testUpdateNonExistTaskStatusFail() throws Exception {
+        utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
+
+        final Long taskStatusId = taskStatusRepository.findAll().get(0).getId();
+
+        final Long nonExistTaskStatusId = taskStatusId + 1;
+        assertFalse(taskStatusRepository.findById(nonExistTaskStatusId).isPresent());
+
+        final var updateRequest = delete(TASK_STATUS_CONTROLLER_PATH + ID, nonExistTaskStatusId);
+
+        utils.performAuthorizedRequest(updateRequest, existingUserEmail)
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     public void testDeleteTaskStatus() throws Exception {
         utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
         final Long taskStatusId = taskStatusRepository.findAll().get(0).getId();
 
-        final var deleteRequest = MockMvcRequestBuilders.delete(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusId);
+        final var deleteRequest = delete(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusId);
 
         utils.performAuthorizedRequest(deleteRequest, existingUserEmail)
                 .andExpect(status().isOk());
@@ -208,17 +240,33 @@ class TaskStatusControllerTest {
     }
 
     @Test
-    public void testDeleteTaskStatusUnauthorizedFails() throws Exception {
+    public void testDeleteTaskStatusUnauthorizedFail() throws Exception {
         utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
         final Long taskStatusId = taskStatusRepository.findAll().get(0).getId();
 
-        final var deleteRequest = MockMvcRequestBuilders.delete(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusId);
+        final var deleteRequest = delete(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusId);
 
         try {
             utils.performUnauthorizedRequest(deleteRequest);
-        } catch (Exception e) {
+        } catch (NoSuchElementException e) {
             assertThat(e.getMessage()).isEqualTo("No value present");
         }
+
         assertThat(taskStatusRepository.findById(taskStatusId)).isPresent();
+    }
+
+    @Test
+    public void testDeleteNonExistTaskStatusFail() throws Exception {
+        utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
+
+        final Long taskStatusId = taskStatusRepository.findAll().get(0).getId();
+
+        final Long nonExistTaskStatusId = taskStatusId + 1;
+        assertFalse(taskStatusRepository.findById(nonExistTaskStatusId).isPresent());
+
+        final var deleteRequest = delete(TASK_STATUS_CONTROLLER_PATH + ID, nonExistTaskStatusId);
+
+        utils.performAuthorizedRequest(deleteRequest, existingUserEmail)
+                .andExpect(status().isNotFound());
     }
 }

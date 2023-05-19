@@ -4,9 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.component.JWTUtils;
+import hexlet.code.dto.TaskDto;
 import hexlet.code.dto.TaskStatusDto;
 import hexlet.code.dto.UserDto;
 import hexlet.code.entity.User;
+import hexlet.code.repository.TaskRepository;
+import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
+import static hexlet.code.controller.TaskController.TASK_CONTROLLER_PATH;
 import static hexlet.code.controller.TaskStatusController.TASK_STATUS_CONTROLLER_PATH;
 import static hexlet.code.controller.UserController.USER_CONTROLLER_PATH;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -84,9 +88,17 @@ public class TestUtils {
     private UserRepository userRepository;
 
     @Autowired
+    private TaskStatusRepository taskStatusRepository;
+
+    @Autowired
+    private TaskRepository taskRepository;
+
+    @Autowired
     private JWTUtils jwtUtils;
 
     public void tearDown() {
+        taskRepository.deleteAll();
+        taskStatusRepository.deleteAll();
         userRepository.deleteAll();
     }
 
@@ -106,6 +118,14 @@ public class TestUtils {
     public ResultActions createNewTaskStatus(final TaskStatusDto taskStatusDto, final String email) throws Exception {
         final var request = post(TASK_STATUS_CONTROLLER_PATH)
                 .content(asJson(taskStatusDto))
+                .contentType(APPLICATION_JSON);
+
+        return performAuthorizedRequest(request, email);
+    }
+
+    public ResultActions createNewTask(final TaskDto taskDto, final String email) throws Exception {
+        final var request = post(TASK_CONTROLLER_PATH)
+                .content(asJson(taskDto))
                 .contentType(APPLICATION_JSON);
 
         return performAuthorizedRequest(request, email);
