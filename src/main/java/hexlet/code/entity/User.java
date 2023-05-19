@@ -37,6 +37,7 @@ public class User {
     @NotBlank
     private String lastName;
 
+    @NotBlank
     @Column(unique = true)
     private String email;
 
@@ -47,4 +48,6 @@ public class User {
     @CreationTimestamp
     @Temporal(TIMESTAMP)
     private Date createdAt;
+    public User(Long aLong) {
+    }
 }
