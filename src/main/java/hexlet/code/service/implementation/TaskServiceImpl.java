@@ -13,8 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -27,38 +25,21 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public Task createNewTask(TaskDto taskDto) {
-//        final Task task = fromDto(taskDto);
-        final Task task = new Task();
-        task.setName(taskDto.getName());
-        task.setDescription(taskDto.getDescription());
-        task.setTaskStatus(taskStatusRepository.findById(taskDto.getTaskStatusId()).get());
-        task.setAuthor(userService.getCurrentUser());
-        task.setExecutor(userRepository.findById(taskDto.getExecutorId()).get());
-        task.setName(taskDto.getName());
+        final Task task = createTaskFromDto(taskDto);
         return taskRepository.save(task);
     }
 
     @Override
     public Task updateTask(long id, TaskDto taskDto) {
-//        final Task taskToUpdate = fromDto(taskDto);
-//        taskToUpdate.setId(id);
-        final Task taskToUpdate = taskRepository.findById(id).get();
-        taskToUpdate.setName(taskDto.getName());
-        taskToUpdate.setDescription(taskDto.getDescription());
-        taskToUpdate.setTaskStatus(taskStatusRepository.findById(taskDto.getTaskStatusId()).get());
-        taskToUpdate.setAuthor(userService.getCurrentUser());
-        taskToUpdate.setExecutor(userRepository.findById(taskDto.getExecutorId()).get());
+        final Task taskToUpdate = createTaskFromDto(taskDto);
+        taskToUpdate.setId(id);
         return taskRepository.save(taskToUpdate);
     }
 
-    private Task fromDto(final TaskDto taskDto) {
+    private Task createTaskFromDto(final TaskDto taskDto) {
         final User author = userService.getCurrentUser();
-        final User executor = Optional.ofNullable(taskDto.getExecutorId())
-                .map(User::new)
-                .orElse(null);
-        final TaskStatus taskStatus = Optional.ofNullable(taskDto.getTaskStatusId())
-                .map(TaskStatus::new)
-                .orElse(null);
+        final User executor = userRepository.findById(taskDto.getExecutorId()).get();
+        final TaskStatus taskStatus = taskStatusRepository.findById(taskDto.getTaskStatusId()).get();
 
         return Task.builder()
                 .author(author)
