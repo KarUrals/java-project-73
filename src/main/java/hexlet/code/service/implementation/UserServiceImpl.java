@@ -1,19 +1,17 @@
 package hexlet.code.service.implementation;
 
-import hexlet.code.AlreadyExistsException;
 import hexlet.code.dto.UserDto;
 import hexlet.code.entity.User;
 import hexlet.code.repository.UserRepository;
 import hexlet.code.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 import static hexlet.code.config.security.SecurityConfig.DEFAULT_AUTHORITIES;
 
@@ -27,17 +25,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public User createNewUser(UserDto userDto) {
-        final Optional<User> existingUser = userRepository.findByEmail(userDto.getEmail());
-        if (existingUser.isPresent()) {
-            throw new AlreadyExistsException("User with email \"" + userDto.getEmail() + "\" already exists");
-        } else {
-            final User user = new User();
-            user.setEmail(userDto.getEmail());
-            user.setFirstName(userDto.getFirstName());
-            user.setLastName(userDto.getLastName());
-            user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-            return userRepository.save(user);
-        }
+        User user = new User();
+        user.setFirstName(userDto.getFirstName());
+        user.setLastName(userDto.getLastName());
+        user.setEmail(userDto.getEmail());
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        return userRepository.save(user);
     }
 
     @Override
@@ -48,6 +41,16 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         userToUpdate.setLastName(userDto.getLastName());
         userToUpdate.setPassword(passwordEncoder.encode(userDto.getPassword()));
         return userRepository.save(userToUpdate);
+    }
+
+    @Override
+    public String getCurrentUserName() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+
+    @Override
+    public User getCurrentUser() {
+        return userRepository.findByEmail(getCurrentUserName()).get();
     }
 
     @Override
