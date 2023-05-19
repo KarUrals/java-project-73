@@ -36,9 +36,11 @@ out/
 ### VS Code ###
 .vscode/
 
-*.db
-
 ### Frontend ###
 node
 frontend/build
 frontend/node_modules
+
+### Other ###
+*.db
+*.log
