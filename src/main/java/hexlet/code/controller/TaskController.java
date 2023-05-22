@@ -33,7 +33,7 @@ public class TaskController {
     private final TaskRepository taskRepository;
     private final TaskService taskService;
 
-    private static final String ONLY_OWNER_BY_ID =
+    private static final String TASK_CREATOR =
             "@taskRepository.findById(#id).get().getAuthor().getEmail() == authentication.getName()";
 
     @PostMapping(path = "")
@@ -55,13 +55,12 @@ public class TaskController {
     }
 
     @PutMapping(ID)
-//    @PreAuthorize(ONLY_OWNER_BY_ID)
     public Task updateTask(@RequestBody @Valid final TaskDto taskDto, @PathVariable long id) {
         return taskService.updateTask(id, taskDto);
     }
 
     @DeleteMapping(ID)
-    @PreAuthorize(ONLY_OWNER_BY_ID)
+    @PreAuthorize(TASK_CREATOR)
     public void deleteTask(@PathVariable final Long id) {
         taskRepository.deleteById(id);
     }

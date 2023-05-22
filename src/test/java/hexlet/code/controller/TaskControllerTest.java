@@ -29,11 +29,8 @@ import static hexlet.code.controller.TaskController.TASK_CONTROLLER_PATH;
 import static hexlet.code.controller.TaskStatusController.TASK_STATUS_CONTROLLER_PATH;
 import static hexlet.code.controller.UserController.ID;
 import static hexlet.code.controller.UserController.USER_CONTROLLER_PATH;
-import static hexlet.code.utils.TestUtils.FIRST_USER;
-import static hexlet.code.utils.TestUtils.NEW_TASK_STATUS;
-import static hexlet.code.utils.TestUtils.asJson;
-import static hexlet.code.utils.TestUtils.getInfoFromJson;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -67,12 +64,12 @@ class TaskControllerTest {
 
     @BeforeEach
     public void initialization() throws Exception {
-        utils.createNewUser(FIRST_USER);
+        utils.createNewUser(TestUtils.FIRST_USER);
         User existingUser = userRepository.findAll().stream().
                 filter(Objects::nonNull).findFirst().get();
         existingUserEmail = existingUser.getEmail();
 
-        utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
+        utils.createNewTaskStatus(TestUtils.NEW_TASK_STATUS, existingUserEmail);
         TaskStatus existingTaskStatus = taskStatusRepository.findAll().stream().
                 filter(Objects::nonNull).findFirst().get();
 
@@ -97,7 +94,7 @@ class TaskControllerTest {
     }
 
     @Test
-    void testCreateNewTaskWithNotValidName() throws Exception {
+    void testCreateNewTaskWithNotValidNameFail() throws Exception {
         Assertions.assertEquals(0, taskRepository.count());
 
         utils.createNewTask(notValidTaskDto, existingUserEmail)
@@ -119,11 +116,11 @@ class TaskControllerTest {
     }
 
     @Test
-    void testCreateNewTaskUnauthorizedFails() throws Exception {
+    void testCreateNewTaskUnauthorizedFail() throws Exception {
         Assertions.assertEquals(0, taskRepository.count());
 
         final var createRequest = post(TASK_CONTROLLER_PATH)
-                .content(asJson(newTaskDto))
+                .content(TestUtils.asJson(newTaskDto))
                 .contentType(APPLICATION_JSON);
 
         try {
@@ -148,7 +145,7 @@ class TaskControllerTest {
                 .andReturn()
                 .getResponse();
 
-        List<Task> tasks = getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
+        List<Task> tasks = TestUtils.getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
         Assertions.assertEquals(expectedCount, tasks.size());
     }
 
@@ -164,9 +161,23 @@ class TaskControllerTest {
                 .andReturn()
                 .getResponse();
 
-        final Task actualTask = getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
+        final Task actualTask = TestUtils.getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
 
         Assertions.assertEquals(newTaskDto.getName(), actualTask.getName());
+    }
+
+    @Test
+    public void testGetNonExistTaskByIdFail() throws Exception {
+        utils.createNewTask(newTaskDto, existingUserEmail);
+        final Long taskId = taskRepository.findAll().get(0).getId();
+
+        final Long nonExistTaskId = taskId + 1;
+        assertFalse(taskRepository.findById(nonExistTaskId).isPresent());
+
+        final var getRequest = get(TASK_CONTROLLER_PATH + ID, nonExistTaskId);
+
+        utils.performAuthorizedRequest(getRequest, existingUserEmail)
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -175,7 +186,7 @@ class TaskControllerTest {
         final Long taskId = taskRepository.findAll().get(0).getId();
 
         final var updateRequest = put(TASK_CONTROLLER_PATH + ID, taskId)
-                .content(asJson(anotherTaskDto))
+                .content(TestUtils.asJson(anotherTaskDto))
                 .contentType(APPLICATION_JSON);
 
         utils.performAuthorizedRequest(updateRequest, existingUserEmail)
@@ -187,12 +198,32 @@ class TaskControllerTest {
     }
 
     @Test
-    void testUpdateTaskWithNotValidName() throws Exception {
+    public void testUpdateAnotherUserTaskFail() throws Exception {
+        utils.createNewTask(newTaskDto, existingUserEmail);
+        final Long taskId = taskRepository.findAll().get(0).getId();
+
+        utils.createNewUser(TestUtils.SECOND_USER);
+        String secondUserEmail = TestUtils.SECOND_USER.getEmail();
+
+        final var updateRequest = put(TASK_CONTROLLER_PATH + ID, taskId)
+                .content(TestUtils.asJson(anotherTaskDto))
+                .contentType(APPLICATION_JSON);
+
+        utils.performAuthorizedRequest(updateRequest, secondUserEmail)
+                .andExpect(status().isOk());
+
+        Assertions.assertTrue(taskRepository.existsById(taskId));
+        Assertions.assertNull(taskRepository.findByName(newTaskDto.getName()).orElse(null));
+        Assertions.assertNotNull(taskRepository.findByName(anotherTaskDto.getName()).orElse(null));
+    }
+
+    @Test
+    void testUpdateTaskWithNotValidNameFail() throws Exception {
         utils.createNewTask(newTaskDto, existingUserEmail);
         final Long taskId = taskRepository.findAll().get(0).getId();
 
         final var updateRequest = put(TASK_CONTROLLER_PATH + ID, taskId)
-                .content(asJson(notValidTaskDto))
+                .content(TestUtils.asJson(notValidTaskDto))
                 .contentType(APPLICATION_JSON);
 
         utils.performAuthorizedRequest(updateRequest, existingUserEmail)
@@ -203,12 +234,12 @@ class TaskControllerTest {
     }
 
     @Test
-    void testUpdateTaskUnauthorizedFails() throws Exception {
+    void testUpdateTaskUnauthorizedFail() throws Exception {
         utils.createNewTask(newTaskDto, existingUserEmail);
         final Long taskId = taskRepository.findAll().get(0).getId();
 
         final var updateRequest = put(TASK_CONTROLLER_PATH + ID, taskId)
-                .content(asJson(anotherTaskDto))
+                .content(TestUtils.asJson(anotherTaskDto))
                 .contentType(APPLICATION_JSON);
 
         try {
@@ -236,7 +267,7 @@ class TaskControllerTest {
     }
 
     @Test
-    public void testDeleteTaskUnauthorizedFails() throws Exception {
+    public void testDeleteTaskUnauthorizedFail() throws Exception {
         utils.createNewTask(newTaskDto, existingUserEmail);
         final Long taskId = taskRepository.findAll().get(0).getId();
 
@@ -251,7 +282,23 @@ class TaskControllerTest {
     }
 
     @Test
-    public void testDeleteTaskStatusAssignedToTaskFails() throws Exception {
+    public void testDeleteAnotherUserTaskFail() throws Exception {
+        utils.createNewTask(newTaskDto, existingUserEmail);
+        final Long taskId = taskRepository.findAll().get(0).getId();
+
+        utils.createNewUser(TestUtils.SECOND_USER);
+        String secondUserEmail = TestUtils.SECOND_USER.getEmail();
+
+        utils.createNewTask(anotherTaskDto, secondUserEmail);
+
+        final var deleteRequest = delete(TASK_CONTROLLER_PATH + ID, taskId);
+
+        utils.performAuthorizedRequest(deleteRequest, secondUserEmail)
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testDeleteTaskStatusAssignedToTaskFail() throws Exception {
         utils.createNewTask(newTaskDto, existingUserEmail);
         TaskStatus existingTaskStatus = taskStatusRepository.findAll().stream().
                 filter(Objects::nonNull).findFirst().get();
@@ -266,7 +313,7 @@ class TaskControllerTest {
     }
 
     @Test
-    public void testDeleteUserAssignedToTaskFails() throws Exception {
+    public void testDeleteUserAssignedToTaskFail() throws Exception {
         utils.createNewTask(newTaskDto, existingUserEmail);
         User existingUser = userRepository.findAll().stream().
                 filter(Objects::nonNull).findFirst().get();
