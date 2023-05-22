@@ -51,6 +51,7 @@ public class User {
     @CreationTimestamp
     @Temporal(TIMESTAMP)
     private Date createdAt;
+
     public User(Long aLong) {
     }
 }

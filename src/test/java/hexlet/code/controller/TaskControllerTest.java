@@ -3,9 +3,11 @@ package hexlet.code.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.config.SpringConfigForIT;
 import hexlet.code.dto.TaskDto;
+import hexlet.code.entity.Label;
 import hexlet.code.entity.Task;
 import hexlet.code.entity.TaskStatus;
 import hexlet.code.entity.User;
+import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
@@ -21,15 +23,22 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static hexlet.code.config.SpringConfigForIT.TEST_PROFILE;
+import static hexlet.code.controller.LabelController.LABEL_CONTROLLER_PATH;
+import static hexlet.code.controller.LabelControllerTest.FIRST_LABEL;
 import static hexlet.code.controller.TaskController.TASK_CONTROLLER_PATH;
 import static hexlet.code.controller.TaskStatusController.TASK_STATUS_CONTROLLER_PATH;
 import static hexlet.code.controller.UserController.ID;
 import static hexlet.code.controller.UserController.USER_CONTROLLER_PATH;
+import static hexlet.code.utils.TestUtils.EMPTY_REPOSITORY_SIZE;
+import static hexlet.code.utils.TestUtils.ONE_ITEM_REPOSITORY_SIZE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -61,6 +70,8 @@ class TaskControllerTest {
     private TaskStatusRepository taskStatusRepository;
     @Autowired
     private TestUtils utils;
+    @Autowired
+    private LabelRepository labelRepository;
 
     @BeforeEach
     public void initialization() throws Exception {
@@ -73,9 +84,15 @@ class TaskControllerTest {
         TaskStatus existingTaskStatus = taskStatusRepository.findAll().stream().
                 filter(Objects::nonNull).findFirst().get();
 
-        newTaskDto = buildTaskDto(TASK_NAME, existingUser, existingTaskStatus);
-        anotherTaskDto = buildTaskDto(ANOTHER_TASK_NAME, existingUser, existingTaskStatus);
-        notValidTaskDto = buildTaskDto(NOT_VALID_TASK_NAME, existingUser, existingTaskStatus);
+        utils.createNewLabel(FIRST_LABEL, existingUserEmail);
+        Label label = labelRepository.findAll().stream().
+                filter(Objects::nonNull).findFirst().get();
+        Set<Long> labelsIds = new HashSet<>();
+        labelsIds.add(label.getId());
+
+        newTaskDto = buildTaskDto(TASK_NAME, existingUser, existingTaskStatus, labelsIds);
+        anotherTaskDto = buildTaskDto(ANOTHER_TASK_NAME, existingUser, existingTaskStatus, labelsIds);
+        notValidTaskDto = buildTaskDto(NOT_VALID_TASK_NAME, existingUser, existingTaskStatus, labelsIds);
     }
 
     @AfterEach
@@ -85,39 +102,39 @@ class TaskControllerTest {
 
     @Test
     void testCreateNewTask() throws Exception {
-        Assertions.assertEquals(0, taskRepository.count());
+        assertEquals(EMPTY_REPOSITORY_SIZE, taskRepository.count());
 
         utils.createNewTask(newTaskDto, existingUserEmail)
                 .andExpect(status().isCreated());
 
-        Assertions.assertEquals(1, taskRepository.count());
+        assertEquals(ONE_ITEM_REPOSITORY_SIZE, taskRepository.count());
     }
 
     @Test
     void testCreateNewTaskWithNotValidNameFail() throws Exception {
-        Assertions.assertEquals(0, taskRepository.count());
+        assertEquals(EMPTY_REPOSITORY_SIZE, taskRepository.count());
 
         utils.createNewTask(notValidTaskDto, existingUserEmail)
                 .andExpect(status().isUnprocessableEntity());
 
-        Assertions.assertEquals(0, taskRepository.count());
+        assertEquals(EMPTY_REPOSITORY_SIZE, taskRepository.count());
     }
 
     @Test
     void testTwiceCreateTheSameTaskFail() throws Exception {
-        Assertions.assertEquals(0, taskRepository.count());
+        assertEquals(EMPTY_REPOSITORY_SIZE, taskRepository.count());
 
         utils.createNewTask(newTaskDto, existingUserEmail)
                 .andExpect(status().isCreated());
         utils.createNewTask(newTaskDto, existingUserEmail)
                 .andExpect(status().isUnprocessableEntity());
 
-        Assertions.assertEquals(1, taskRepository.count());
+        assertEquals(ONE_ITEM_REPOSITORY_SIZE, taskRepository.count());
     }
 
     @Test
     void testCreateNewTaskUnauthorizedFail() throws Exception {
-        Assertions.assertEquals(0, taskRepository.count());
+        assertEquals(EMPTY_REPOSITORY_SIZE, taskRepository.count());
 
         final var createRequest = post(TASK_CONTROLLER_PATH)
                 .content(TestUtils.asJson(newTaskDto))
@@ -129,7 +146,7 @@ class TaskControllerTest {
             assertThat(e.getMessage()).isEqualTo("No value present");
         }
 
-        Assertions.assertEquals(0, taskRepository.count());
+        assertEquals(EMPTY_REPOSITORY_SIZE, taskRepository.count());
     }
 
     @Test
@@ -146,7 +163,7 @@ class TaskControllerTest {
                 .getResponse();
 
         List<Task> tasks = TestUtils.getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
-        Assertions.assertEquals(expectedCount, tasks.size());
+        assertEquals(expectedCount, tasks.size());
     }
 
     @Test
@@ -163,7 +180,7 @@ class TaskControllerTest {
 
         final Task actualTask = TestUtils.getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
 
-        Assertions.assertEquals(newTaskDto.getName(), actualTask.getName());
+        assertEquals(newTaskDto.getName(), actualTask.getName());
     }
 
     @Test
@@ -263,7 +280,7 @@ class TaskControllerTest {
         utils.performAuthorizedRequest(deleteRequest, existingUserEmail)
                 .andExpect(status().isOk());
 
-        Assertions.assertEquals(0, taskRepository.count());
+        assertEquals(EMPTY_REPOSITORY_SIZE, taskRepository.count());
     }
 
     @Test
@@ -327,14 +344,33 @@ class TaskControllerTest {
         assertThat(userRepository.findById(userId)).isPresent();
     }
 
-    private TaskDto buildTaskDto(final String name, final User user, final TaskStatus taskStatus) {
+    @Test
+    public void testDeleteLabelAssignedToTaskFail() throws Exception {
+        utils.createNewTask(newTaskDto, existingUserEmail);
+        Label existingLabel = labelRepository.findAll().stream().
+                filter(Objects::nonNull).findFirst().get();
+        final Long labelId = existingLabel.getId();
+
+        final var deleteRequest = delete(LABEL_CONTROLLER_PATH + ID, labelId);
+
+        utils.performAuthorizedRequest(deleteRequest, existingUserEmail)
+                .andExpect(status().isUnprocessableEntity());
+
+        assertThat(labelRepository.findById(labelId)).isPresent();
+    }
+
+    private TaskDto buildTaskDto(final String name,
+                                 final User user,
+                                 final TaskStatus taskStatus,
+                                 final Set<Long> labelsIds) {
 
         return  new TaskDto(
                 name,
                 DEFAULT_TASK_DESCRIPTION,
                 taskStatus.getId(),
                 user.getId(),
-                user.getId()
+                user.getId(),
+                labelsIds
         );
     }
 }

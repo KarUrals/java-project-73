@@ -30,6 +30,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 @Component
 public class TestUtils {
+    public static final int EMPTY_REPOSITORY_SIZE = 0;
+    public static final int ONE_ITEM_REPOSITORY_SIZE = 1;
 
     public static final UserDto FIRST_USER = new UserDto(
             "happy_dev@gmail.com",

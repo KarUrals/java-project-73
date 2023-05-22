@@ -25,10 +25,13 @@ import java.util.NoSuchElementException;
 import static hexlet.code.config.SpringConfigForIT.TEST_PROFILE;
 import static hexlet.code.controller.LabelController.LABEL_CONTROLLER_PATH;
 import static hexlet.code.controller.UserController.ID;
+import static hexlet.code.utils.TestUtils.EMPTY_REPOSITORY_SIZE;
 import static hexlet.code.utils.TestUtils.FIRST_USER;
+import static hexlet.code.utils.TestUtils.ONE_ITEM_REPOSITORY_SIZE;
 import static hexlet.code.utils.TestUtils.asJson;
 import static hexlet.code.utils.TestUtils.getInfoFromJson;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -43,8 +46,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(TEST_PROFILE)
 @ExtendWith(SpringExtension.class)
 class LabelControllerTest {
-    private static final LabelDto FIRST_LABEL = new LabelDto("Feature");
-    private static final LabelDto SECOND_LABEL = new LabelDto("Bug");
+    public static final LabelDto FIRST_LABEL = new LabelDto("Feature");
+    public static final LabelDto SECOND_LABEL = new LabelDto("Bug");
     private static final LabelDto NOT_VALID_LABEL = new LabelDto("");
     private static String existingUserEmail;
     @Autowired
@@ -67,39 +70,39 @@ class LabelControllerTest {
 
     @Test
     void testCreateNewLabel() throws Exception {
-        Assertions.assertEquals(0, labelRepository.count());
+        assertEquals(EMPTY_REPOSITORY_SIZE, labelRepository.count());
 
         utils.createNewLabel(FIRST_LABEL, existingUserEmail)
                 .andExpect(status().isCreated());
 
-        Assertions.assertEquals(1, labelRepository.count());
+        assertEquals(ONE_ITEM_REPOSITORY_SIZE, labelRepository.count());
     }
 
     @Test
     void testCreateNewLabelWithNotValidNameFail() throws Exception {
-        Assertions.assertEquals(0, labelRepository.count());
+        assertEquals(EMPTY_REPOSITORY_SIZE, labelRepository.count());
 
         utils.createNewLabel(NOT_VALID_LABEL, existingUserEmail)
                 .andExpect(status().isUnprocessableEntity());
 
-        Assertions.assertEquals(0, labelRepository.count());
+        assertEquals(EMPTY_REPOSITORY_SIZE, labelRepository.count());
     }
 
     @Test
     void testTwiceCreateTheSameLabelFail() throws Exception {
-        Assertions.assertEquals(0, labelRepository.count());
+        assertEquals(EMPTY_REPOSITORY_SIZE, labelRepository.count());
 
         utils.createNewLabel(FIRST_LABEL, existingUserEmail)
                 .andExpect(status().isCreated());
         utils.createNewLabel(FIRST_LABEL, existingUserEmail)
                 .andExpect(status().isUnprocessableEntity());
 
-        Assertions.assertEquals(1, labelRepository.count());
+        assertEquals(ONE_ITEM_REPOSITORY_SIZE, labelRepository.count());
     }
 
     @Test
     void testCreateNewLabelUnauthorizedFail() throws Exception {
-        Assertions.assertEquals(0, labelRepository.count());
+        assertEquals(EMPTY_REPOSITORY_SIZE, labelRepository.count());
 
         final var createRequest = post(LABEL_CONTROLLER_PATH)
                 .content(asJson(FIRST_LABEL))
@@ -111,7 +114,7 @@ class LabelControllerTest {
             assertThat(e.getMessage()).isEqualTo("No value present");
         }
 
-        Assertions.assertEquals(0, labelRepository.count());
+        assertEquals(EMPTY_REPOSITORY_SIZE, labelRepository.count());
     }
 
     @Test
@@ -128,7 +131,7 @@ class LabelControllerTest {
                 .getResponse();
 
         List<Label> labels = getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
-        Assertions.assertEquals(expectedCount, labels.size());
+        assertEquals(expectedCount, labels.size());
     }
 
     @Test
@@ -159,7 +162,7 @@ class LabelControllerTest {
 
         final TaskStatus actualLabel = getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
 
-        Assertions.assertEquals(FIRST_LABEL.getName(), actualLabel.getName());
+        assertEquals(FIRST_LABEL.getName(), actualLabel.getName());
     }
 
     @Test
@@ -267,7 +270,7 @@ class LabelControllerTest {
         utils.performAuthorizedRequest(deleteRequest, existingUserEmail)
                 .andExpect(status().isOk());
 
-        Assertions.assertEquals(0, labelRepository.count());
+        assertEquals(EMPTY_REPOSITORY_SIZE, labelRepository.count());
     }
 
     @Test

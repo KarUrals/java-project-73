@@ -23,12 +23,15 @@ import static hexlet.code.config.SpringConfigForIT.TEST_PROFILE;
 import static hexlet.code.controller.TaskStatusController.TASK_STATUS_CONTROLLER_PATH;
 import static hexlet.code.controller.UserController.ID;
 import static hexlet.code.utils.TestUtils.AT_WORK_TASK_STATUS;
+import static hexlet.code.utils.TestUtils.EMPTY_REPOSITORY_SIZE;
 import static hexlet.code.utils.TestUtils.FIRST_USER;
 import static hexlet.code.utils.TestUtils.NEW_TASK_STATUS;
 import static hexlet.code.utils.TestUtils.NOT_VALID_TASK_STATUS;
+import static hexlet.code.utils.TestUtils.ONE_ITEM_REPOSITORY_SIZE;
 import static hexlet.code.utils.TestUtils.asJson;
 import static hexlet.code.utils.TestUtils.getInfoFromJson;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -62,39 +65,39 @@ class TaskStatusControllerTest {
 
     @Test
     void testCreateNewTaskStatus() throws Exception {
-        Assertions.assertEquals(0, taskStatusRepository.count());
+        assertEquals(EMPTY_REPOSITORY_SIZE, taskStatusRepository.count());
 
         utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail)
                 .andExpect(status().isCreated());
 
-        Assertions.assertEquals(1, taskStatusRepository.count());
+        assertEquals(ONE_ITEM_REPOSITORY_SIZE, taskStatusRepository.count());
     }
 
     @Test
     void testCreateNewTaskStatusWithNotValidNameFail() throws Exception {
-        Assertions.assertEquals(0, taskStatusRepository.count());
+        assertEquals(EMPTY_REPOSITORY_SIZE, taskStatusRepository.count());
 
         utils.createNewTaskStatus(NOT_VALID_TASK_STATUS, existingUserEmail)
                 .andExpect(status().isUnprocessableEntity());
 
-        Assertions.assertEquals(0, taskStatusRepository.count());
+        assertEquals(EMPTY_REPOSITORY_SIZE, taskStatusRepository.count());
     }
 
     @Test
     void testTwiceCreateTheSameTaskStatusFail() throws Exception {
-        Assertions.assertEquals(0, taskStatusRepository.count());
+        assertEquals(EMPTY_REPOSITORY_SIZE, taskStatusRepository.count());
 
         utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail)
                 .andExpect(status().isCreated());
         utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail)
                 .andExpect(status().isUnprocessableEntity());
 
-        Assertions.assertEquals(1, taskStatusRepository.count());
+        assertEquals(ONE_ITEM_REPOSITORY_SIZE, taskStatusRepository.count());
     }
 
     @Test
     void testCreateNewTaskStatusUnauthorizedFail() throws Exception {
-        Assertions.assertEquals(0, taskStatusRepository.count());
+        assertEquals(EMPTY_REPOSITORY_SIZE, taskStatusRepository.count());
 
         final var createRequest = post(TASK_STATUS_CONTROLLER_PATH)
                 .content(asJson(NEW_TASK_STATUS))
@@ -106,7 +109,7 @@ class TaskStatusControllerTest {
             assertThat(e.getMessage()).isEqualTo("No value present");
         }
 
-        Assertions.assertEquals(0, taskStatusRepository.count());
+        assertEquals(EMPTY_REPOSITORY_SIZE, taskStatusRepository.count());
     }
 
     @Test
@@ -123,7 +126,7 @@ class TaskStatusControllerTest {
                 .getResponse();
 
         List<TaskStatus> statuses = getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
-        Assertions.assertEquals(expectedCount, statuses.size());
+        assertEquals(expectedCount, statuses.size());
     }
 
     @Test
@@ -140,7 +143,7 @@ class TaskStatusControllerTest {
 
         final TaskStatus actualTaskStatus = getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
 
-        Assertions.assertEquals(NEW_TASK_STATUS.getName(), actualTaskStatus.getName());
+        assertEquals(NEW_TASK_STATUS.getName(), actualTaskStatus.getName());
     }
 
     @Test
@@ -236,7 +239,7 @@ class TaskStatusControllerTest {
         utils.performAuthorizedRequest(deleteRequest, existingUserEmail)
                 .andExpect(status().isOk());
 
-        Assertions.assertEquals(0, taskStatusRepository.count());
+        assertEquals(EMPTY_REPOSITORY_SIZE, taskStatusRepository.count());
     }
 
     @Test

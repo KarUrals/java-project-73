@@ -37,4 +37,7 @@ public class Label {
     @CreationTimestamp
     @Temporal(TIMESTAMP)
     private Date createdAt;
+
+    public Label(Long aLong) {
+    }
 }

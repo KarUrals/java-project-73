@@ -38,6 +38,7 @@ public class TaskStatus {
     @CreationTimestamp
     @Temporal(TIMESTAMP)
     private Date createdAt;
+
     public TaskStatus(Long aLong) {
     }
 }
