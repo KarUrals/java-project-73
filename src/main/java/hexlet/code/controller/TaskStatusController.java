@@ -57,7 +57,6 @@ public class TaskStatusController {
     }
 
     @PutMapping(path = ID)
-//    @PreAuthorize(ONLY_TASK_STATUS_OWNER_BY_ID)
     @PreAuthorize("isAuthenticated()")
     public TaskStatus updateTaskStatus(@PathVariable final long id,
                                        @RequestBody @Valid final TaskStatusDto taskStatusDto) {
@@ -65,7 +64,6 @@ public class TaskStatusController {
     }
 
     @DeleteMapping(path = ID)
-//    @PreAuthorize(ONLY_TASK_STATUS_OWNER_BY_ID)
     @PreAuthorize("isAuthenticated()")
     public void deleteTaskStatus(@PathVariable final long id) {
         taskStatusRepository.deleteById(id);

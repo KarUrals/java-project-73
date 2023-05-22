@@ -24,7 +24,7 @@ public class TaskStatusServiceImpl implements TaskStatusService {
 
     @Override
     public TaskStatus updateTaskStatus(long id, TaskStatusDto taskStatusDto) {
-        TaskStatus taskStatusToUpdate = taskStatusRepository.getById(id);
+        final TaskStatus taskStatusToUpdate = taskStatusRepository.getById(id);
         taskStatusToUpdate.setName(taskStatusDto.getName());
         return taskStatusRepository.save(taskStatusToUpdate);
     }
