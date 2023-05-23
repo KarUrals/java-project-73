@@ -31,15 +31,21 @@ import java.util.Set;
 import static hexlet.code.config.SpringConfigForIT.TEST_PROFILE;
 import static hexlet.code.controller.LabelController.LABEL_CONTROLLER_PATH;
 import static hexlet.code.controller.LabelControllerTest.FIRST_LABEL;
+import static hexlet.code.controller.LabelControllerTest.SECOND_LABEL;
 import static hexlet.code.controller.TaskController.TASK_CONTROLLER_PATH;
 import static hexlet.code.controller.TaskStatusController.TASK_STATUS_CONTROLLER_PATH;
 import static hexlet.code.controller.UserController.ID;
 import static hexlet.code.controller.UserController.USER_CONTROLLER_PATH;
+import static hexlet.code.utils.TestUtils.AT_WORK_TASK_STATUS;
 import static hexlet.code.utils.TestUtils.EMPTY_REPOSITORY_SIZE;
+import static hexlet.code.utils.TestUtils.FIRST_USER;
+import static hexlet.code.utils.TestUtils.NEW_TASK_STATUS;
 import static hexlet.code.utils.TestUtils.ONE_ITEM_REPOSITORY_SIZE;
+import static hexlet.code.utils.TestUtils.SECOND_USER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -75,12 +81,12 @@ class TaskControllerTest {
 
     @BeforeEach
     public void initialization() throws Exception {
-        utils.createNewUser(TestUtils.FIRST_USER);
+        utils.createNewUser(FIRST_USER);
         User existingUser = userRepository.findAll().stream().
                 filter(Objects::nonNull).findFirst().get();
         existingUserEmail = existingUser.getEmail();
 
-        utils.createNewTaskStatus(TestUtils.NEW_TASK_STATUS, existingUserEmail);
+        utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
         TaskStatus existingTaskStatus = taskStatusRepository.findAll().stream().
                 filter(Objects::nonNull).findFirst().get();
 
@@ -121,15 +127,13 @@ class TaskControllerTest {
     }
 
     @Test
-    void testTwiceCreateTheSameTaskFail() throws Exception {
+    void testTwiceCreateTheSameTask() throws Exception {
         assertEquals(EMPTY_REPOSITORY_SIZE, taskRepository.count());
 
         utils.createNewTask(newTaskDto, existingUserEmail)
                 .andExpect(status().isCreated());
         utils.createNewTask(newTaskDto, existingUserEmail)
-                .andExpect(status().isUnprocessableEntity());
-
-        assertEquals(ONE_ITEM_REPOSITORY_SIZE, taskRepository.count());
+                .andExpect(status().isCreated());
     }
 
     @Test
@@ -164,6 +168,65 @@ class TaskControllerTest {
 
         List<Task> tasks = TestUtils.getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
         assertEquals(expectedCount, tasks.size());
+    }
+
+    @Test
+    void testGetFilteredTasks() throws Exception {
+        utils.createNewTask(newTaskDto, existingUserEmail);
+
+        User existingUser = userRepository.findAll().stream().
+                filter(Objects::nonNull).findFirst().get();
+        utils.createNewUser(SECOND_USER);
+        User anotherExistingUser = userRepository.findAll().stream().
+                filter(Objects::nonNull).skip(1).findFirst().get();
+
+        TaskStatus existingTaskStatus = taskStatusRepository.findAll().stream().
+                filter(Objects::nonNull).findFirst().get();
+        utils.createNewTaskStatus(AT_WORK_TASK_STATUS, existingUserEmail);
+        TaskStatus anotherExistingTaskStatus = taskStatusRepository.findAll().stream().
+                filter(Objects::nonNull).skip(1).findFirst().get();
+
+        Label label = labelRepository.findAll().stream().
+                filter(Objects::nonNull).findFirst().get();
+        Set<Long> labelIdSet = new HashSet<>();
+        labelIdSet.add(label.getId());
+        utils.createNewLabel(SECOND_LABEL, existingUserEmail);
+        Label anotherLabel = labelRepository.findAll().stream().
+                filter(Objects::nonNull).skip(1).findFirst().get();
+        Set<Long> anotherLabelIdSet = new HashSet<>();
+        anotherLabelIdSet.add(anotherLabel.getId());
+
+        TaskDto anotherStatusDto = buildTaskDto(TASK_NAME, existingUser, anotherExistingTaskStatus, labelIdSet);
+        TaskDto anotherAuthorDto = buildTaskDto(TASK_NAME, anotherExistingUser, existingTaskStatus, labelIdSet);
+        TaskDto anotherLabelDto = buildTaskDto(TASK_NAME, existingUser, existingTaskStatus, anotherLabelIdSet);
+
+        utils.createNewTask(anotherStatusDto, existingUserEmail);
+        Task taskToFind = taskRepository.findAll().get(1);
+        long taskStatus = taskToFind.getTaskStatus().getId();
+        long executorId = taskToFind.getExecutor().getId();
+        long labelId = taskToFind.getLabels().stream().findFirst().get().getId();
+
+        utils.createNewTask(anotherAuthorDto, existingUserEmail);
+        utils.createNewTask(anotherLabelDto, existingUserEmail);
+
+        final int actualRepositoryCount = (int) taskRepository.count();
+
+        final var getRequest = get(TASK_CONTROLLER_PATH).
+                queryParam("taskStatus", String.valueOf(taskStatus)).
+                queryParam("executorId", String.valueOf(executorId)).
+                queryParam("labels", String.valueOf(labelId));
+
+        final int expectedCountOfFilteredTasks = 1;
+
+        final var response = utils.performAuthorizedRequest(getRequest, existingUserEmail)
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse();
+
+        List<Task> tasks = TestUtils.getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
+
+        assertEquals(expectedCountOfFilteredTasks, tasks.size());
+        assertNotEquals(actualRepositoryCount, tasks.size());
     }
 
     @Test

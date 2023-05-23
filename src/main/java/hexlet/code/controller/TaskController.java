@@ -1,10 +1,12 @@
 package hexlet.code.controller;
 
+import com.querydsl.core.types.Predicate;
 import hexlet.code.dto.TaskDto;
 import hexlet.code.entity.Task;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.service.TaskService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,8 +19,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-
-import java.util.List;
 
 import static hexlet.code.controller.TaskController.TASK_CONTROLLER_PATH;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -48,10 +48,8 @@ public class TaskController {
     }
 
     @GetMapping(path = "")
-    public List<Task> getAllTaskStatuses() {
-        return taskRepository.findAll()
-                .stream()
-                .toList();
+    public Iterable<Task> getFilteredTasks(@QuerydslPredicate(root = Task.class) Predicate predicate) {
+        return taskRepository.findAll(predicate);
     }
 
     @PutMapping(ID)

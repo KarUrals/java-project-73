@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -39,7 +39,6 @@ public class Task {
     private Long id;
 
     @NotBlank
-    @Column(unique = true)
     private String name;
 
     private String description;
@@ -58,7 +57,7 @@ public class Task {
     @JoinColumn(name = "executor_id")
     private User executor;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "labels_id")
     private Set<Label> labels;
 
