@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 import static hexlet.code.config.security.SecurityConfig.DEFAULT_AUTHORITIES;
 
 @Service
@@ -30,10 +32,27 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public User updateCurrentUser(long id, UserDto userDto) {
+    public User getUserById(long id) {
+        return userRepository.findById(id)
+                .orElseThrow();
+    }
+
+    @Override
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    @Override
+    public User updateUserById(long id, UserDto userDto) {
         final User userToUpdate = createUserFromDto(userDto);
         userToUpdate.setId(id);
         return userRepository.save(userToUpdate);
+    }
+
+    @Override
+    public void deleteUserById(long id) {
+        final User userToDelete = getUserById(id);
+        userRepository.delete(userToDelete);
     }
 
     @Override
@@ -43,7 +62,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public User getCurrentUser() {
-        return userRepository.findByEmail(getCurrentUserName()).get();
+        return userRepository.findByEmail(getCurrentUserName())
+                .orElseThrow();
     }
 
     @Override

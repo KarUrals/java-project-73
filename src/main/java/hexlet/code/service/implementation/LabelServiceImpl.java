@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -23,9 +25,26 @@ public class LabelServiceImpl implements LabelService {
     }
 
     @Override
-    public Label updateLabel(long id, LabelDto labelDto) {
-        final Label labelToUpdate = labelRepository.getById(id);
+    public Label getLabelById(long id) {
+        return labelRepository.findById(id)
+                .orElseThrow();
+    }
+
+    @Override
+    public List<Label> getAllLabels() {
+        return labelRepository.findAll();
+    }
+
+    @Override
+    public Label updateLabelById(long id, LabelDto labelDto) {
+        final Label labelToUpdate = getLabelById(id);
         labelToUpdate.setName(labelDto.getName());
         return labelRepository.save(labelToUpdate);
+    }
+
+    @Override
+    public void deleteLabelById(long id) {
+        final Label labelToDelete = getLabelById(id);
+        labelRepository.delete(labelToDelete);
     }
 }

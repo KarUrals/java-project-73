@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -23,9 +25,26 @@ public class TaskStatusServiceImpl implements TaskStatusService {
     }
 
     @Override
-    public TaskStatus updateTaskStatus(long id, TaskStatusDto taskStatusDto) {
-        final TaskStatus taskStatusToUpdate = taskStatusRepository.getById(id);
+    public TaskStatus getTaskStatusById(long id) {
+        return taskStatusRepository.findById(id)
+                .orElseThrow();
+    }
+
+    @Override
+    public List<TaskStatus> getAllTaskStatuses() {
+        return taskStatusRepository.findAll();
+    }
+
+    @Override
+    public TaskStatus updateTaskStatusById(long id, TaskStatusDto taskStatusDto) {
+        final TaskStatus taskStatusToUpdate = getTaskStatusById(id);
         taskStatusToUpdate.setName(taskStatusDto.getName());
         return taskStatusRepository.save(taskStatusToUpdate);
+    }
+
+    @Override
+    public void deleteTaskStatusById(long id) {
+        final TaskStatus taskStatusToDelete = getTaskStatusById(id);
+        taskStatusRepository.delete(taskStatusToDelete);
     }
 }

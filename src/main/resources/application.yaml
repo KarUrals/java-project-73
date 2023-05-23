@@ -15,3 +15,7 @@ spring:
     hibernate:
       #создание таблицы при запуске программы и её удаление при остановке программы
       ddl-auto: create-drop
+
+springdoc:
+  swagger-ui:
+    path: /api-docs

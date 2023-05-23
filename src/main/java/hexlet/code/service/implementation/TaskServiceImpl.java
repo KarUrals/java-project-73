@@ -1,15 +1,15 @@
 package hexlet.code.service.implementation;
 
+import com.querydsl.core.types.Predicate;
 import hexlet.code.dto.TaskDto;
 import hexlet.code.entity.Label;
 import hexlet.code.entity.Task;
 import hexlet.code.entity.TaskStatus;
 import hexlet.code.entity.User;
-import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskRepository;
-import hexlet.code.repository.TaskStatusRepository;
-import hexlet.code.repository.UserRepository;
+import hexlet.code.service.LabelService;
 import hexlet.code.service.TaskService;
+import hexlet.code.service.TaskStatusService;
 import hexlet.code.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,16 +23,27 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TaskServiceImpl implements TaskService {
 
-    private final UserService userService;
     private final TaskRepository taskRepository;
-    private final TaskStatusRepository taskStatusRepository;
-    private final UserRepository userRepository;
-    private final LabelRepository labelRepository;
+
+    private final UserService userService;
+    private final TaskStatusService taskStatusService;
+    private final LabelService labelService;
 
     @Override
     public Task createNewTask(TaskDto taskDto) {
         final Task task = createTaskFromDto(taskDto);
         return taskRepository.save(task);
+    }
+
+    @Override
+    public Task getTaskById(long id) {
+        return taskRepository.findById(id)
+                .orElseThrow();
+    }
+
+    @Override
+    public Iterable<Task> getAllTasks(Predicate predicate) {
+        return taskRepository.findAll(predicate);
     }
 
     @Override
@@ -42,19 +53,18 @@ public class TaskServiceImpl implements TaskService {
         return taskRepository.save(taskToUpdate);
     }
 
+    @Override
+    public void deleteTaskById(long id) {
+        final Task taskToDelete = getTaskById(id);
+        taskRepository.delete(taskToDelete);
+    }
+
     private Task createTaskFromDto(final TaskDto taskDto) {
         final User author = userService.getCurrentUser();
-        final User executor = userRepository.findById(taskDto.getExecutorId()).get();
-        final TaskStatus taskStatus = taskStatusRepository.findById(taskDto.getTaskStatusId()).get();
-//        final Set<Label> labels = Optional.ofNullable(taskDto.getLabelIds())
-//                .orElse(Set.of())
-//                .stream()
-//                .filter(Objects::nonNull)
-//                .map(Label::new)
-//                .collect(Collectors.toSet());
-
+        final User executor = userService.getUserById(taskDto.getExecutorId());
+        final TaskStatus taskStatus = taskStatusService.getTaskStatusById(taskDto.getTaskStatusId());
         final Set<Label> labels = taskDto.getLabelIds().stream()
-                .map(id -> labelRepository.findById(id).get())
+                .map(labelService::getLabelById)
                 .collect(Collectors.toSet());
 
         return Task.builder()
