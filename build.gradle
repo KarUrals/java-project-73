@@ -38,6 +38,7 @@ dependencies {
 	implementation 'com.querydsl:querydsl-core:5.0.0'
 	implementation 'com.querydsl:querydsl-jpa:5.0.0'
 	implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
+	implementation 'com.rollbar:rollbar-spring-boot-webmvc:1.10.0'
 
 	runtimeOnly 'com.h2database:h2'
 	runtimeOnly 'org.postgresql:postgresql'
