@@ -48,7 +48,6 @@ import static org.springframework.security.web.authentication.UsernamePasswordAu
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = SpringConfigForIT.class)
@@ -236,11 +235,8 @@ public class UserControllerTest {
 
         @Test
         public void testUpdateUser() throws Exception {
-            final var updateRequest = put(USER_CONTROLLER_PATH + ID, firstUserId)
-                    .content(asJson(SECOND_USER))
-                    .contentType(APPLICATION_JSON);
-
-            final var response = utils.performAuthorizedRequest(updateRequest, firstUserEmail)
+            final var response = utils.performAuthorizedRequest(
+                    utils.createUserUpdateRequest(firstUserId, SECOND_USER), firstUserEmail)
                     .andExpect(status().isOk())
                     .andReturn()
                     .getResponse();
@@ -257,21 +253,14 @@ public class UserControllerTest {
             utils.createNewUser(SECOND_USER);
             final String secondUserEmail = SECOND_USER.getEmail();
 
-            final var updateRequest = put(USER_CONTROLLER_PATH + ID, firstUserId)
-                    .content(asJson(SECOND_USER))
-                    .contentType(APPLICATION_JSON);
-
-            utils.performAuthorizedRequest(updateRequest, secondUserEmail)
+            utils.performAuthorizedRequest(utils.createUserUpdateRequest(firstUserId, SECOND_USER), secondUserEmail)
                     .andExpect(status().isForbidden());
         }
 
         @Test
         public void testUpdateUserWithNotValidEmailFail() throws Exception {
-            final var updateRequest = put(USER_CONTROLLER_PATH + ID, firstUserId)
-                    .content(asJson(NOT_VALID_EMAIL_USER))
-                    .contentType(APPLICATION_JSON);
-
-            utils.performAuthorizedRequest(updateRequest, firstUserEmail)
+            utils.performAuthorizedRequest(
+                    utils.createUserUpdateRequest(firstUserId, NOT_VALID_EMAIL_USER), firstUserEmail)
                     .andExpect(status().isUnprocessableEntity());
 
             checkMatchActualUserByEmailWithFirstUser(firstUserEmail);
@@ -279,11 +268,8 @@ public class UserControllerTest {
 
         @Test
         public void testUpdateUserWithNotValidFirstNameFail() throws Exception {
-            final var updateRequest = put(USER_CONTROLLER_PATH + ID, firstUserId)
-                    .content(asJson(NOT_VALID_FIRSTNAME_USER))
-                    .contentType(APPLICATION_JSON);
-
-            utils.performAuthorizedRequest(updateRequest, firstUserEmail)
+            utils.performAuthorizedRequest(
+                    utils.createUserUpdateRequest(firstUserId, NOT_VALID_FIRSTNAME_USER), firstUserEmail)
                     .andExpect(status().isUnprocessableEntity());
 
             checkMatchActualUserByEmailWithFirstUser(firstUserEmail);
@@ -291,11 +277,8 @@ public class UserControllerTest {
 
         @Test
         public void testUpdateUserWithNotValidLastNameFail() throws Exception {
-            final var updateRequest = put(USER_CONTROLLER_PATH + ID, firstUserId)
-                    .content(asJson(NOT_VALID_LASTNAME_USER))
-                    .contentType(APPLICATION_JSON);
-
-            utils.performAuthorizedRequest(updateRequest, firstUserEmail)
+            utils.performAuthorizedRequest(
+                    utils.createUserUpdateRequest(firstUserId, NOT_VALID_LASTNAME_USER), firstUserEmail)
                     .andExpect(status().isUnprocessableEntity());
 
             checkMatchActualUserByEmailWithFirstUser(firstUserEmail);
@@ -303,11 +286,8 @@ public class UserControllerTest {
 
         @Test
         public void testUpdateUserWithNotValidPasswordFail() throws Exception {
-            final var updateRequest = put(USER_CONTROLLER_PATH + ID, firstUserId)
-                    .content(asJson(NOT_VALID_PASSWORD_USER))
-                    .contentType(APPLICATION_JSON);
-
-            utils.performAuthorizedRequest(updateRequest, firstUserEmail)
+            utils.performAuthorizedRequest(
+                    utils.createUserUpdateRequest(firstUserId, NOT_VALID_PASSWORD_USER), firstUserEmail)
                     .andExpect(status().isUnprocessableEntity());
 
             checkMatchActualUserByEmailWithFirstUser(firstUserEmail);
@@ -318,11 +298,7 @@ public class UserControllerTest {
             final Long nonExistUserId = firstUserId + 1;
             assertFalse(userRepository.findById(nonExistUserId).isPresent());
 
-            final var updateRequest = put(USER_CONTROLLER_PATH + ID, nonExistUserId)
-                    .content(asJson(SECOND_USER))
-                    .contentType(APPLICATION_JSON);
-
-            utils.performAuthorizedRequest(updateRequest, firstUserEmail)
+            utils.performAuthorizedRequest(utils.createUserUpdateRequest(nonExistUserId, SECOND_USER), firstUserEmail)
                     .andExpect(status().isNotFound());
         }
 

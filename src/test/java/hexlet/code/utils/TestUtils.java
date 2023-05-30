@@ -23,10 +23,12 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import static hexlet.code.controller.LabelController.LABEL_CONTROLLER_PATH;
 import static hexlet.code.controller.TaskController.TASK_CONTROLLER_PATH;
 import static hexlet.code.controller.TaskStatusController.TASK_STATUS_CONTROLLER_PATH;
+import static hexlet.code.controller.UserController.ID;
 import static hexlet.code.controller.UserController.USER_CONTROLLER_PATH;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 @Component
 public class TestUtils {
@@ -121,12 +123,28 @@ public class TestUtils {
         return performUnauthorizedRequest(request);
     }
 
+    public MockHttpServletRequestBuilder createUserUpdateRequest(
+            final Long userIdToUpdate,
+            final UserDto userDtoToUpdate) throws JsonProcessingException {
+        return put(USER_CONTROLLER_PATH + ID, userIdToUpdate)
+                .content(asJson(userDtoToUpdate))
+                .contentType(APPLICATION_JSON);
+    }
+
     public ResultActions createNewTaskStatus(final TaskStatusDto taskStatusDto, final String email) throws Exception {
         final var request = post(TASK_STATUS_CONTROLLER_PATH)
                 .content(asJson(taskStatusDto))
                 .contentType(APPLICATION_JSON);
 
         return performAuthorizedRequest(request, email);
+    }
+
+    public MockHttpServletRequestBuilder createTaskStatusUpdateRequest(
+            final Long taskStatusIdToUpdate,
+            final TaskStatusDto taskStatusDtoToUpdate) throws JsonProcessingException {
+        return put(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusIdToUpdate)
+                .content(asJson(taskStatusDtoToUpdate))
+                .contentType(APPLICATION_JSON);
     }
 
     public ResultActions createNewLabel(final LabelDto labelDto, final String email) throws Exception {
@@ -137,12 +155,28 @@ public class TestUtils {
         return performAuthorizedRequest(request, email);
     }
 
+    public MockHttpServletRequestBuilder createLabelUpdateRequest(
+            final Long labelIdToUpdate,
+            final LabelDto labelDtoToUpdate) throws JsonProcessingException {
+        return put(LABEL_CONTROLLER_PATH + ID, labelIdToUpdate)
+                .content(asJson(labelDtoToUpdate))
+                .contentType(APPLICATION_JSON);
+    }
+
     public ResultActions createNewTask(final TaskDto taskDto, final String email) throws Exception {
         final var request = post(TASK_CONTROLLER_PATH)
                 .content(asJson(taskDto))
                 .contentType(APPLICATION_JSON);
 
         return performAuthorizedRequest(request, email);
+    }
+
+    public MockHttpServletRequestBuilder createTaskUpdateRequest(
+            final Long taskIdToUpdate,
+            final TaskDto taskDtoToUpdate) throws JsonProcessingException {
+        return put(TASK_CONTROLLER_PATH + ID, taskIdToUpdate)
+                .content(asJson(taskDtoToUpdate))
+                .contentType(APPLICATION_JSON);
     }
 
     public ResultActions performAuthorizedRequest(

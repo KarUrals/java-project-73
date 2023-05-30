@@ -8,6 +8,7 @@ import hexlet.code.utils.TestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = SpringConfigForIT.class)
@@ -112,164 +112,134 @@ class TaskStatusControllerTest {
         assertEquals(EMPTY_REPOSITORY_SIZE, taskStatusRepository.count());
     }
 
-    @Test
-    void testGetAllTaskStatuses() throws Exception {
-        utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
-        utils.createNewTaskStatus(AT_WORK_TASK_STATUS, existingUserEmail);
-        final int expectedCount = (int) taskStatusRepository.count();
+    @Nested
+    class GetUpdateDeleteTests {
+        private static Long taskStatusId;
 
-        final var getRequest = get(TASK_STATUS_CONTROLLER_PATH);
-
-        final var response = utils.performUnauthorizedRequest(getRequest)
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse();
-
-        List<TaskStatus> statuses = getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
-        assertEquals(expectedCount, statuses.size());
-    }
-
-    @Test
-    void testGetTaskStatusById() throws Exception {
-        utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
-        final Long taskStatusId = taskStatusRepository.findAll().get(0).getId();
-
-        final var getRequest = get(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusId);
-
-        final var response = utils.performUnauthorizedRequest(getRequest)
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse();
-
-        final TaskStatus actualTaskStatus = getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
-
-        assertEquals(NEW_TASK_STATUS.getName(), actualTaskStatus.getName());
-    }
-
-    @Test
-    public void testGetNonExistTaskStatusByIdFail() throws Exception {
-        utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
-
-        final Long taskStatusId = taskStatusRepository.findAll().get(0).getId();
-
-        final Long nonExistTaskStatusId = taskStatusId + 1;
-        assertFalse(taskStatusRepository.findById(nonExistTaskStatusId).isPresent());
-
-        final var getRequest = get(TASK_STATUS_CONTROLLER_PATH + ID, nonExistTaskStatusId);
-
-        utils.performAuthorizedRequest(getRequest, existingUserEmail)
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void testUpdateTaskStatus() throws Exception {
-        utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
-        final Long taskStatusId = taskStatusRepository.findAll().get(0).getId();
-
-        final var updateRequest = put(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusId)
-                .content(asJson(AT_WORK_TASK_STATUS))
-                .contentType(APPLICATION_JSON);
-
-        utils.performAuthorizedRequest(updateRequest, existingUserEmail)
-                .andExpect(status().isOk());
-
-        Assertions.assertTrue(taskStatusRepository.existsById(taskStatusId));
-        Assertions.assertNull(taskStatusRepository.findByName(NEW_TASK_STATUS.getName()).orElse(null));
-        Assertions.assertNotNull(taskStatusRepository.findByName(AT_WORK_TASK_STATUS.getName()).orElse(null));
-    }
-
-    @Test
-    void testUpdateTaskStatusWithNotValidNameFail() throws Exception {
-        utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
-        final Long taskStatusId = taskStatusRepository.findAll().get(0).getId();
-
-        final var updateRequest = put(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusId)
-                .content(asJson(NOT_VALID_TASK_STATUS))
-                .contentType(APPLICATION_JSON);
-
-        utils.performAuthorizedRequest(updateRequest, existingUserEmail)
-                .andExpect(status().isUnprocessableEntity());
-
-        Assertions.assertTrue(taskStatusRepository.existsById(taskStatusId));
-        Assertions.assertNotNull(taskStatusRepository.findByName(NEW_TASK_STATUS.getName()).orElse(null));
-    }
-
-    @Test
-    void testUpdateTaskStatusUnauthorizedFailsFail() throws Exception {
-        utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
-        final Long taskStatusId = taskStatusRepository.findAll().get(0).getId();
-
-        final var updateRequest = put(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusId)
-                .content(asJson(AT_WORK_TASK_STATUS))
-                .contentType(APPLICATION_JSON);
-
-        try {
-            utils.performUnauthorizedRequest(updateRequest);
-        } catch (NoSuchElementException e) {
-            assertThat(e.getMessage()).isEqualTo("No value present");
+        @BeforeEach
+        public void createFirstLabel() throws Exception {
+            utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
+            taskStatusId = taskStatusRepository.findAll().get(0).getId();
         }
 
-        Assertions.assertTrue(taskStatusRepository.existsById(taskStatusId));
-        Assertions.assertNull(taskStatusRepository.findByName(AT_WORK_TASK_STATUS.getName()).orElse(null));
-        Assertions.assertNotNull(taskStatusRepository.findByName(NEW_TASK_STATUS.getName()).orElse(null));
-    }
+        @Test
+        void testGetAllTaskStatuses() throws Exception {
+            utils.createNewTaskStatus(AT_WORK_TASK_STATUS, existingUserEmail);
+            final int expectedCount = (int) taskStatusRepository.count();
 
-    @Test
-    public void testUpdateNonExistTaskStatusFail() throws Exception {
-        utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
+            final var getRequest = get(TASK_STATUS_CONTROLLER_PATH);
 
-        final Long taskStatusId = taskStatusRepository.findAll().get(0).getId();
+            final var response = utils.performUnauthorizedRequest(getRequest)
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse();
 
-        final Long nonExistTaskStatusId = taskStatusId + 1;
-        assertFalse(taskStatusRepository.findById(nonExistTaskStatusId).isPresent());
-
-        final var updateRequest = delete(TASK_STATUS_CONTROLLER_PATH + ID, nonExistTaskStatusId);
-
-        utils.performAuthorizedRequest(updateRequest, existingUserEmail)
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    public void testDeleteTaskStatus() throws Exception {
-        utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
-        final Long taskStatusId = taskStatusRepository.findAll().get(0).getId();
-
-        final var deleteRequest = delete(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusId);
-
-        utils.performAuthorizedRequest(deleteRequest, existingUserEmail)
-                .andExpect(status().isOk());
-
-        assertEquals(EMPTY_REPOSITORY_SIZE, taskStatusRepository.count());
-    }
-
-    @Test
-    public void testDeleteTaskStatusUnauthorizedFail() throws Exception {
-        utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
-        final Long taskStatusId = taskStatusRepository.findAll().get(0).getId();
-
-        final var deleteRequest = delete(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusId);
-
-        try {
-            utils.performUnauthorizedRequest(deleteRequest);
-        } catch (NoSuchElementException e) {
-            assertThat(e.getMessage()).isEqualTo("No value present");
+            List<TaskStatus> statuses = getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
+            assertEquals(expectedCount, statuses.size());
         }
 
-        assertThat(taskStatusRepository.findById(taskStatusId)).isPresent();
-    }
+        @Test
+        void testGetTaskStatusById() throws Exception {
+            final var getRequest = get(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusId);
 
-    @Test
-    public void testDeleteNonExistTaskStatusFail() throws Exception {
-        utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
+            final var response = utils.performUnauthorizedRequest(getRequest)
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse();
 
-        final Long taskStatusId = taskStatusRepository.findAll().get(0).getId();
+            final TaskStatus actualTaskStatus = getInfoFromJson(response.getContentAsString(),
+                                                                new TypeReference<>() { });
 
-        final Long nonExistTaskStatusId = taskStatusId + 1;
-        assertFalse(taskStatusRepository.findById(nonExistTaskStatusId).isPresent());
+            assertEquals(NEW_TASK_STATUS.getName(), actualTaskStatus.getName());
+        }
 
-        final var deleteRequest = delete(TASK_STATUS_CONTROLLER_PATH + ID, nonExistTaskStatusId);
+        @Test
+        public void testGetNonExistTaskStatusByIdFail() throws Exception {
+            final Long nonExistTaskStatusId = taskStatusId + 1;
+            assertFalse(taskStatusRepository.findById(nonExistTaskStatusId).isPresent());
 
-        utils.performAuthorizedRequest(deleteRequest, existingUserEmail)
-                .andExpect(status().isNotFound());
+            final var getRequest = get(TASK_STATUS_CONTROLLER_PATH + ID, nonExistTaskStatusId);
+
+            utils.performAuthorizedRequest(getRequest, existingUserEmail)
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void testUpdateTaskStatus() throws Exception {
+            utils.performAuthorizedRequest(
+                    utils.createTaskStatusUpdateRequest(taskStatusId, AT_WORK_TASK_STATUS), existingUserEmail)
+                    .andExpect(status().isOk());
+
+            Assertions.assertTrue(taskStatusRepository.existsById(taskStatusId));
+            Assertions.assertNull(taskStatusRepository.findByName(NEW_TASK_STATUS.getName()).orElse(null));
+            Assertions.assertNotNull(taskStatusRepository.findByName(AT_WORK_TASK_STATUS.getName()).orElse(null));
+        }
+
+        @Test
+        void testUpdateTaskStatusWithNotValidNameFail() throws Exception {
+            utils.performAuthorizedRequest(
+                    utils.createTaskStatusUpdateRequest(taskStatusId, NOT_VALID_TASK_STATUS), existingUserEmail)
+                    .andExpect(status().isUnprocessableEntity());
+
+            Assertions.assertTrue(taskStatusRepository.existsById(taskStatusId));
+            Assertions.assertNotNull(taskStatusRepository.findByName(NEW_TASK_STATUS.getName()).orElse(null));
+        }
+
+        @Test
+        void testUpdateTaskStatusUnauthorizedFailsFail() throws Exception {
+            try {
+                utils.performUnauthorizedRequest(
+                        utils.createTaskStatusUpdateRequest(taskStatusId, AT_WORK_TASK_STATUS));
+            } catch (NoSuchElementException e) {
+                assertThat(e.getMessage()).isEqualTo("No value present");
+            }
+
+            Assertions.assertTrue(taskStatusRepository.existsById(taskStatusId));
+            Assertions.assertNull(taskStatusRepository.findByName(AT_WORK_TASK_STATUS.getName()).orElse(null));
+            Assertions.assertNotNull(taskStatusRepository.findByName(NEW_TASK_STATUS.getName()).orElse(null));
+        }
+
+        @Test
+        public void testUpdateNonExistTaskStatusFail() throws Exception {
+            final Long nonExistTaskStatusId = taskStatusId + 1;
+            assertFalse(taskStatusRepository.findById(nonExistTaskStatusId).isPresent());
+            utils.performAuthorizedRequest(
+                    utils.createTaskStatusUpdateRequest(nonExistTaskStatusId, AT_WORK_TASK_STATUS), existingUserEmail)
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        public void testDeleteTaskStatus() throws Exception {
+            final var deleteRequest = delete(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusId);
+
+            utils.performAuthorizedRequest(deleteRequest, existingUserEmail)
+                    .andExpect(status().isOk());
+
+            assertEquals(EMPTY_REPOSITORY_SIZE, taskStatusRepository.count());
+        }
+
+        @Test
+        public void testDeleteTaskStatusUnauthorizedFail() throws Exception {
+            final var deleteRequest = delete(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusId);
+
+            try {
+                utils.performUnauthorizedRequest(deleteRequest);
+            } catch (NoSuchElementException e) {
+                assertThat(e.getMessage()).isEqualTo("No value present");
+            }
+
+            assertThat(taskStatusRepository.findById(taskStatusId)).isPresent();
+        }
+
+        @Test
+        public void testDeleteNonExistTaskStatusFail() throws Exception {
+            final Long nonExistTaskStatusId = taskStatusId + 1;
+            assertFalse(taskStatusRepository.findById(nonExistTaskStatusId).isPresent());
+
+            final var deleteRequest = delete(TASK_STATUS_CONTROLLER_PATH + ID, nonExistTaskStatusId);
+
+            utils.performAuthorizedRequest(deleteRequest, existingUserEmail)
+                    .andExpect(status().isNotFound());
+        }
     }
 }
