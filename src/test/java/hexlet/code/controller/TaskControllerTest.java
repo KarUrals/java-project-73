@@ -42,6 +42,8 @@ import static hexlet.code.utils.TestUtils.FIRST_USER;
 import static hexlet.code.utils.TestUtils.NEW_TASK_STATUS;
 import static hexlet.code.utils.TestUtils.ONE_ITEM_REPOSITORY_SIZE;
 import static hexlet.code.utils.TestUtils.SECOND_USER;
+import static hexlet.code.utils.TestUtils.asJson;
+import static hexlet.code.utils.TestUtils.getInfoFromJson;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -63,7 +65,10 @@ class TaskControllerTest {
     private static final String TASK_NAME = "New task name";
     private static final String ANOTHER_TASK_NAME = "Another task name";
     private static final String NOT_VALID_TASK_NAME = "";
+    private static User existingUser;
     private static String existingUserEmail;
+    private static TaskStatus existingTaskStatus;
+    private static Set<Long> labelsIds;
     private static TaskDto newTaskDto;
     private static TaskDto anotherTaskDto;
     private static TaskDto notValidTaskDto;
@@ -82,18 +87,18 @@ class TaskControllerTest {
     @BeforeEach
     public void initialization() throws Exception {
         utils.createNewUser(FIRST_USER);
-        User existingUser = userRepository.findAll().stream().
+        existingUser = userRepository.findAll().stream().
                 filter(Objects::nonNull).findFirst().get();
         existingUserEmail = existingUser.getEmail();
 
         utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
-        TaskStatus existingTaskStatus = taskStatusRepository.findAll().stream().
+        existingTaskStatus = taskStatusRepository.findAll().stream().
                 filter(Objects::nonNull).findFirst().get();
 
         utils.createNewLabel(FIRST_LABEL, existingUserEmail);
         Label label = labelRepository.findAll().stream().
                 filter(Objects::nonNull).findFirst().get();
-        Set<Long> labelsIds = new HashSet<>();
+        labelsIds = new HashSet<>();
         labelsIds.add(label.getId());
 
         newTaskDto = buildTaskDto(TASK_NAME, existingUser, existingTaskStatus, labelsIds);
@@ -141,7 +146,7 @@ class TaskControllerTest {
         assertEquals(EMPTY_REPOSITORY_SIZE, taskRepository.count());
 
         final var createRequest = post(TASK_CONTROLLER_PATH)
-                .content(TestUtils.asJson(newTaskDto))
+                .content(asJson(newTaskDto))
                 .contentType(APPLICATION_JSON);
 
         try {
@@ -166,7 +171,7 @@ class TaskControllerTest {
                 .andReturn()
                 .getResponse();
 
-        List<Task> tasks = TestUtils.getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
+        List<Task> tasks = getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
         assertEquals(expectedCount, tasks.size());
     }
 
@@ -174,30 +179,22 @@ class TaskControllerTest {
     void testGetFilteredTasks() throws Exception {
         utils.createNewTask(newTaskDto, existingUserEmail);
 
-        User existingUser = userRepository.findAll().stream().
-                filter(Objects::nonNull).findFirst().get();
         utils.createNewUser(SECOND_USER);
         User anotherExistingUser = userRepository.findAll().stream().
                 filter(Objects::nonNull).skip(1).findFirst().get();
 
-        TaskStatus existingTaskStatus = taskStatusRepository.findAll().stream().
-                filter(Objects::nonNull).findFirst().get();
         utils.createNewTaskStatus(AT_WORK_TASK_STATUS, existingUserEmail);
         TaskStatus anotherExistingTaskStatus = taskStatusRepository.findAll().stream().
                 filter(Objects::nonNull).skip(1).findFirst().get();
 
-        Label label = labelRepository.findAll().stream().
-                filter(Objects::nonNull).findFirst().get();
-        Set<Long> labelIdSet = new HashSet<>();
-        labelIdSet.add(label.getId());
         utils.createNewLabel(SECOND_LABEL, existingUserEmail);
         Label anotherLabel = labelRepository.findAll().stream().
                 filter(Objects::nonNull).skip(1).findFirst().get();
         Set<Long> anotherLabelIdSet = new HashSet<>();
         anotherLabelIdSet.add(anotherLabel.getId());
 
-        TaskDto anotherStatusDto = buildTaskDto(TASK_NAME, existingUser, anotherExistingTaskStatus, labelIdSet);
-        TaskDto anotherAuthorDto = buildTaskDto(TASK_NAME, anotherExistingUser, existingTaskStatus, labelIdSet);
+        TaskDto anotherStatusDto = buildTaskDto(TASK_NAME, existingUser, anotherExistingTaskStatus, labelsIds);
+        TaskDto anotherAuthorDto = buildTaskDto(TASK_NAME, anotherExistingUser, existingTaskStatus, labelsIds);
         TaskDto anotherLabelDto = buildTaskDto(TASK_NAME, existingUser, existingTaskStatus, anotherLabelIdSet);
 
         utils.createNewTask(anotherStatusDto, existingUserEmail);
@@ -223,7 +220,7 @@ class TaskControllerTest {
                 .andReturn()
                 .getResponse();
 
-        List<Task> tasks = TestUtils.getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
+        List<Task> tasks = getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
 
         assertEquals(expectedCountOfFilteredTasks, tasks.size());
         assertNotEquals(actualRepositoryCount, tasks.size());
@@ -241,7 +238,7 @@ class TaskControllerTest {
                 .andReturn()
                 .getResponse();
 
-        final Task actualTask = TestUtils.getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
+        final Task actualTask = getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
 
         assertEquals(newTaskDto.getName(), actualTask.getName());
     }
@@ -266,7 +263,7 @@ class TaskControllerTest {
         final Long taskId = taskRepository.findAll().get(0).getId();
 
         final var updateRequest = put(TASK_CONTROLLER_PATH + ID, taskId)
-                .content(TestUtils.asJson(anotherTaskDto))
+                .content(asJson(anotherTaskDto))
                 .contentType(APPLICATION_JSON);
 
         utils.performAuthorizedRequest(updateRequest, existingUserEmail)
@@ -282,11 +279,11 @@ class TaskControllerTest {
         utils.createNewTask(newTaskDto, existingUserEmail);
         final Long taskId = taskRepository.findAll().get(0).getId();
 
-        utils.createNewUser(TestUtils.SECOND_USER);
-        String secondUserEmail = TestUtils.SECOND_USER.getEmail();
+        utils.createNewUser(SECOND_USER);
+        String secondUserEmail = SECOND_USER.getEmail();
 
         final var updateRequest = put(TASK_CONTROLLER_PATH + ID, taskId)
-                .content(TestUtils.asJson(anotherTaskDto))
+                .content(asJson(anotherTaskDto))
                 .contentType(APPLICATION_JSON);
 
         utils.performAuthorizedRequest(updateRequest, secondUserEmail)
@@ -303,7 +300,7 @@ class TaskControllerTest {
         final Long taskId = taskRepository.findAll().get(0).getId();
 
         final var updateRequest = put(TASK_CONTROLLER_PATH + ID, taskId)
-                .content(TestUtils.asJson(notValidTaskDto))
+                .content(asJson(notValidTaskDto))
                 .contentType(APPLICATION_JSON);
 
         utils.performAuthorizedRequest(updateRequest, existingUserEmail)
@@ -319,7 +316,7 @@ class TaskControllerTest {
         final Long taskId = taskRepository.findAll().get(0).getId();
 
         final var updateRequest = put(TASK_CONTROLLER_PATH + ID, taskId)
-                .content(TestUtils.asJson(anotherTaskDto))
+                .content(asJson(anotherTaskDto))
                 .contentType(APPLICATION_JSON);
 
         try {
@@ -366,8 +363,8 @@ class TaskControllerTest {
         utils.createNewTask(newTaskDto, existingUserEmail);
         final Long taskId = taskRepository.findAll().get(0).getId();
 
-        utils.createNewUser(TestUtils.SECOND_USER);
-        String secondUserEmail = TestUtils.SECOND_USER.getEmail();
+        utils.createNewUser(SECOND_USER);
+        String secondUserEmail = SECOND_USER.getEmail();
 
         utils.createNewTask(anotherTaskDto, secondUserEmail);
 
