@@ -44,7 +44,7 @@ public class LabelController {
             @ApiResponse(responseCode = "422", description = "Request contains invalid data"),
             @ApiResponse(responseCode = "401", description = "Unauthorized request")
     })
-    @PostMapping(path = "")
+    @PostMapping()
     @ResponseStatus(CREATED)
     @PreAuthorize(AUTHORIZED_USERS_ONLY)
     public Label createNewLabel(
@@ -74,7 +74,7 @@ public class LabelController {
                                        schema = @Schema(implementation = Label.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized request")
     })
-    @GetMapping(path = "")
+    @GetMapping()
     @PreAuthorize(AUTHORIZED_USERS_ONLY)
     public List<Label> getAllLabels() {
         return labelService.getAllLabels();
