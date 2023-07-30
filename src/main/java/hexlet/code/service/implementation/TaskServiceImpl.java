@@ -14,6 +14,8 @@ import hexlet.code.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -61,11 +63,17 @@ public class TaskServiceImpl implements TaskService {
 
     private Task createTaskFromDto(final TaskDto taskDto) {
         final User author = userService.getCurrentUser();
-        final User executor = userService.getUserById(taskDto.getExecutorId());
-        final TaskStatus taskStatus = taskStatusService.getTaskStatusById(taskDto.getTaskStatusId());
-        final Set<Label> labels = taskDto.getLabelIds().stream()
-                .map(labelService::getLabelById)
-                .collect(Collectors.toSet());
+        final User executor = Optional.ofNullable(taskDto.getExecutorId())
+                .flatMap(userId -> Optional.ofNullable(userService.getUserById(userId)))
+                .orElse(null);
+        final TaskStatus taskStatus = Optional.ofNullable(taskDto.getTaskStatusId())
+                .flatMap(taskStatusId -> Optional.ofNullable(taskStatusService.getTaskStatusById(taskStatusId)))
+                .orElse(null);
+        final Set<Label> labels = Optional.ofNullable(taskDto.getLabelIds())
+                .map(labelIds -> labelIds.stream()
+                        .map(labelService::getLabelById)
+                        .collect(Collectors.toSet()))
+                .orElse(Set.of());
 
         return Task.builder()
                 .author(author)
