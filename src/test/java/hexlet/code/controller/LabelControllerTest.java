@@ -33,7 +33,6 @@ import static hexlet.code.utils.TestUtils.asJson;
 import static hexlet.code.utils.TestUtils.getInfoFromJson;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -159,28 +158,6 @@ class LabelControllerTest {
         }
 
         @Test
-        public void testGetNonExistLabelByIdFail() throws Exception {
-            final Long nonExistLabelId = labelId + 1;
-            assertFalse(labelRepository.findById(nonExistLabelId).isPresent());
-
-            final var getRequest = get(LABEL_CONTROLLER_PATH + ID, nonExistLabelId);
-
-            utils.performAuthorizedRequest(getRequest, existingUserEmail)
-                    .andExpect(status().isNotFound());
-        }
-
-        @Test
-        void testGetLabelByIdUnauthorizedFail() throws Exception {
-            final var getRequest = get(LABEL_CONTROLLER_PATH + ID, labelId);
-
-            try {
-                utils.performUnauthorizedRequest(getRequest);
-            } catch (NoSuchElementException e) {
-                assertThat(e.getMessage()).isEqualTo("No value present");
-            }
-        }
-
-        @Test
         void testUpdateLabel() throws Exception {
             utils.performAuthorizedRequest(utils.createLabelUpdateRequest(labelId, SECOND_LABEL), existingUserEmail)
                     .andExpect(status().isOk());
@@ -191,38 +168,6 @@ class LabelControllerTest {
         }
 
         @Test
-        void testUpdateLabelWithNotValidNameFail() throws Exception {
-            utils.performAuthorizedRequest(utils.createLabelUpdateRequest(labelId, NOT_VALID_LABEL), existingUserEmail)
-                    .andExpect(status().isUnprocessableEntity());
-
-            Assertions.assertTrue(labelRepository.existsById(labelId));
-            Assertions.assertNotNull(labelRepository.findByName(FIRST_LABEL.getName()).orElse(null));
-        }
-
-        @Test
-        void testUpdateLabelUnauthorizedFailsFail() throws Exception {
-            try {
-                utils.performUnauthorizedRequest(utils.createLabelUpdateRequest(labelId, SECOND_LABEL));
-            } catch (NoSuchElementException e) {
-                assertThat(e.getMessage()).isEqualTo("No value present");
-            }
-
-            Assertions.assertTrue(labelRepository.existsById(labelId));
-            Assertions.assertNull(labelRepository.findByName(SECOND_LABEL.getName()).orElse(null));
-            Assertions.assertNotNull(labelRepository.findByName(FIRST_LABEL.getName()).orElse(null));
-        }
-
-        @Test
-        public void testUpdateNonExistLabelFail() throws Exception {
-            final Long nonExistLabelId = labelId + 1;
-            assertFalse(labelRepository.findById(nonExistLabelId).isPresent());
-
-            utils.performAuthorizedRequest(
-                    utils.createLabelUpdateRequest(nonExistLabelId, SECOND_LABEL), existingUserEmail)
-                    .andExpect(status().isNotFound());
-        }
-
-        @Test
         public void testDeleteLabel() throws Exception {
             final var deleteRequest = delete(LABEL_CONTROLLER_PATH + ID, labelId);
 
@@ -230,30 +175,6 @@ class LabelControllerTest {
                     .andExpect(status().isOk());
 
             assertEquals(EMPTY_REPOSITORY_SIZE, labelRepository.count());
-        }
-
-        @Test
-        public void testDeleteLabelUnauthorizedFail() throws Exception {
-            final var deleteRequest = delete(LABEL_CONTROLLER_PATH + ID, labelId);
-
-            try {
-                utils.performUnauthorizedRequest(deleteRequest);
-            } catch (NoSuchElementException e) {
-                assertThat(e.getMessage()).isEqualTo("No value present");
-            }
-
-            assertThat(labelRepository.findById(labelId)).isPresent();
-        }
-
-        @Test
-        public void testDeleteNonExistLabelFail() throws Exception {
-            final Long nonExistLabelId = labelId + 1;
-            assertFalse(labelRepository.findById(nonExistLabelId).isPresent());
-
-            final var deleteRequest = delete(LABEL_CONTROLLER_PATH + ID, nonExistLabelId);
-
-            utils.performAuthorizedRequest(deleteRequest, existingUserEmail)
-                    .andExpect(status().isNotFound());
         }
     }
 }

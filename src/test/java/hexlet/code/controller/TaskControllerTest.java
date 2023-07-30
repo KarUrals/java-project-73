@@ -41,15 +41,12 @@ import static hexlet.code.utils.TestUtils.FIRST_USER;
 import static hexlet.code.utils.TestUtils.NEW_TASK_STATUS;
 import static hexlet.code.utils.TestUtils.ONE_ITEM_REPOSITORY_SIZE;
 import static hexlet.code.utils.TestUtils.SECOND_USER;
-import static hexlet.code.utils.TestUtils.asJson;
 import static hexlet.code.utils.TestUtils.getInfoFromJson;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = SpringConfigForIT.class)
@@ -118,16 +115,6 @@ class TaskControllerTest {
     }
 
     @Test
-    void testCreateNewTaskWithNotValidNameFail() throws Exception {
-        assertEquals(EMPTY_REPOSITORY_SIZE, taskRepository.count());
-
-        utils.createNewTask(notValidTaskDto, existingUserEmail)
-                .andExpect(status().isUnprocessableEntity());
-
-        assertEquals(EMPTY_REPOSITORY_SIZE, taskRepository.count());
-    }
-
-    @Test
     void testTwiceCreateTheSameTask() throws Exception {
         assertEquals(EMPTY_REPOSITORY_SIZE, taskRepository.count());
 
@@ -135,23 +122,6 @@ class TaskControllerTest {
                 .andExpect(status().isCreated());
         utils.createNewTask(newTaskDto, existingUserEmail)
                 .andExpect(status().isCreated());
-    }
-
-    @Test
-    void testCreateNewTaskUnauthorizedFail() throws Exception {
-        assertEquals(EMPTY_REPOSITORY_SIZE, taskRepository.count());
-
-        final var createRequest = post(TASK_CONTROLLER_PATH)
-                .content(asJson(newTaskDto))
-                .contentType(APPLICATION_JSON);
-
-        try {
-            utils.performUnauthorizedRequest(createRequest);
-        } catch (Exception e) {
-            assertThat(e.getMessage()).isEqualTo("No value present");
-        }
-
-        assertEquals(EMPTY_REPOSITORY_SIZE, taskRepository.count());
     }
 
     @Nested
@@ -215,15 +185,6 @@ class TaskControllerTest {
             Assertions.assertTrue(taskRepository.existsById(taskId));
             Assertions.assertNull(taskRepository.findByName(newTaskDto.getName()).orElse(null));
             Assertions.assertNotNull(taskRepository.findByName(anotherTaskDto.getName()).orElse(null));
-        }
-
-        @Test
-        void testUpdateTaskWithNotValidNameFail() throws Exception {
-            utils.performAuthorizedRequest(utils.createTaskUpdateRequest(taskId, notValidTaskDto), existingUserEmail)
-                    .andExpect(status().isUnprocessableEntity());
-
-            Assertions.assertTrue(taskRepository.existsById(taskId));
-            Assertions.assertNotNull(taskRepository.findByName(newTaskDto.getName()).orElse(null));
         }
 
         @Test

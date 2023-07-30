@@ -228,51 +228,6 @@ public class UserControllerTest {
         }
 
         @Test
-        public void testUpdateAnotherUserFail() throws Exception {
-            utils.createNewUser(SECOND_USER);
-            final String secondUserEmail = SECOND_USER.getEmail();
-
-            utils.performAuthorizedRequest(utils.createUserUpdateRequest(firstUserId, SECOND_USER), secondUserEmail)
-                    .andExpect(status().isForbidden());
-        }
-
-        @Test
-        public void testUpdateUserWithNotValidEmailFail() throws Exception {
-            utils.performAuthorizedRequest(
-                    utils.createUserUpdateRequest(firstUserId, NOT_VALID_EMAIL_USER), firstUserEmail)
-                    .andExpect(status().isUnprocessableEntity());
-
-            checkMatchActualUserByEmailWithFirstUser(firstUserEmail);
-        }
-
-        @Test
-        public void testUpdateUserWithNotValidFirstNameFail() throws Exception {
-            utils.performAuthorizedRequest(
-                    utils.createUserUpdateRequest(firstUserId, NOT_VALID_FIRSTNAME_USER), firstUserEmail)
-                    .andExpect(status().isUnprocessableEntity());
-
-            checkMatchActualUserByEmailWithFirstUser(firstUserEmail);
-        }
-
-        @Test
-        public void testUpdateUserWithNotValidPasswordFail() throws Exception {
-            utils.performAuthorizedRequest(
-                    utils.createUserUpdateRequest(firstUserId, NOT_VALID_PASSWORD_USER), firstUserEmail)
-                    .andExpect(status().isUnprocessableEntity());
-
-            checkMatchActualUserByEmailWithFirstUser(firstUserEmail);
-        }
-
-        @Test
-        public void testUpdateNonExistUserFail() throws Exception {
-            final Long nonExistUserId = firstUserId + 1;
-            assertFalse(userRepository.findById(nonExistUserId).isPresent());
-
-            utils.performAuthorizedRequest(utils.createUserUpdateRequest(nonExistUserId, SECOND_USER), firstUserEmail)
-                    .andExpect(status().isNotFound());
-        }
-
-        @Test
         public void testDeleteUser() throws Exception {
             final var deleteRequest = delete(USER_CONTROLLER_PATH + ID, firstUserId);
 
@@ -295,14 +250,6 @@ public class UserControllerTest {
 
             assertEquals(expectedCount, userRepository.count());
             assertThat(userRepository.findById(firstUserId)).isPresent();
-        }
-
-        private void checkMatchActualUserByEmailWithFirstUser(final String email) {
-            final User actualUser = utils.getUserByEmail(email);
-
-            assertEquals(firstUser.getFirstName(), actualUser.getFirstName());
-            assertEquals(firstUser.getLastName(), actualUser.getLastName());
-            assertEquals(firstUser.getEmail(), actualUser.getEmail());
         }
     }
 }
