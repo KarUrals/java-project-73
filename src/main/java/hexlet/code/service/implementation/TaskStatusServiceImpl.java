@@ -1,18 +1,17 @@
-package hexlet.code.service.implementation;
+package hexlet.code.service.impl;
 
 import hexlet.code.dto.TaskStatusDto;
 import hexlet.code.entity.TaskStatus;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.service.TaskStatusService;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
-@Transactional
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class TaskStatusServiceImpl implements TaskStatusService {
 
     private final TaskStatusRepository taskStatusRepository;
@@ -27,7 +26,7 @@ public class TaskStatusServiceImpl implements TaskStatusService {
     @Override
     public TaskStatus getTaskStatusById(long id) {
         return taskStatusRepository.findById(id)
-                .orElseThrow();
+                .orElseThrow(NoSuchElementException::new);
     }
 
     @Override

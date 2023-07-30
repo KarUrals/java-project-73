@@ -1,18 +1,17 @@
-package hexlet.code.service.implementation;
+package hexlet.code.service.impl;
 
 import hexlet.code.dto.LabelDto;
 import hexlet.code.entity.Label;
 import hexlet.code.repository.LabelRepository;
 import hexlet.code.service.LabelService;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
-@Transactional
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class LabelServiceImpl implements LabelService {
 
     private final LabelRepository labelRepository;
@@ -27,7 +26,7 @@ public class LabelServiceImpl implements LabelService {
     @Override
     public Label getLabelById(long id) {
         return labelRepository.findById(id)
-                .orElseThrow();
+                .orElseThrow(NoSuchElementException::new);
     }
 
     @Override

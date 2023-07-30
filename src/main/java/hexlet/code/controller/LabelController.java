@@ -11,17 +11,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.List;
 
 import static hexlet.code.controller.LabelController.LABEL_CONTROLLER_PATH;
@@ -39,8 +39,8 @@ public class LabelController {
     @Operation(summary = "Create new label")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Label created",
-                    content = @Content(mediaType = "application/json",
-                                       schema = @Schema(implementation = Label.class))),
+                         content = @Content(mediaType = "application/json",
+                         schema = @Schema(implementation = Label.class))),
             @ApiResponse(responseCode = "422", description = "Request contains invalid data"),
             @ApiResponse(responseCode = "401", description = "Unauthorized request")
     })
@@ -55,8 +55,8 @@ public class LabelController {
     @Operation(summary = "Get label by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Label found",
-                    content = @Content(mediaType = "application/json",
-                                       schema = @Schema(implementation = Label.class))),
+                         content = @Content(mediaType = "application/json",
+                         schema = @Schema(implementation = Label.class))),
             @ApiResponse(responseCode = "404", description = "Label with that ID not found"),
             @ApiResponse(responseCode = "401", description = "Unauthorized request")
     })
@@ -70,8 +70,8 @@ public class LabelController {
     @Operation(summary = "Get list of all labels")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "List of all labels",
-                    content = @Content(mediaType = "application/json",
-                                       schema = @Schema(implementation = Label.class))),
+                         content = @Content(mediaType = "application/json",
+                         schema = @Schema(implementation = Label.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized request")
     })
     @GetMapping()
@@ -82,8 +82,8 @@ public class LabelController {
     @Operation(summary = "Update existing label by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Label updated",
-                    content = @Content(mediaType = "application/json",
-                                       schema = @Schema(implementation = Label.class))),
+                         content = @Content(mediaType = "application/json",
+                         schema = @Schema(implementation = Label.class))),
             @ApiResponse(responseCode = "404", description = "Label with that ID not found"),
             @ApiResponse(responseCode = "422", description = "Request contains invalid data"),
             @ApiResponse(responseCode = "401", description = "Unauthorized request")

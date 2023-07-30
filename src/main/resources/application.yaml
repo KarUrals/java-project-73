@@ -1,21 +1,27 @@
 server:
-  port: ${PORT:5000}
+  port: ${PORT:4896}
 
 base-url: /api
 
 spring:
   application:
-    name: taskManager
+    name: app
+
+  profiles:
+    active: ${APP_ENV:dev}
 
   liquibase:
     enabled: true
-    change-log: classpath:db/changelog/changelog-master.xml
+    change-log: classpath:db/changelog/db.changelog-master.yaml
 
   jpa:
     hibernate:
-      #создание таблицы при запуске программы и её удаление при остановке программы
-      ddl-auto: create-drop
+      ddl-auto: none
 
-springdoc:
-  swagger-ui:
-    path: /api-docs
+
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
+
+#  rollbar_token: ${ROLLBAR_TOKEN:7bffcd5a8d6d4f86929d018889fc075d}

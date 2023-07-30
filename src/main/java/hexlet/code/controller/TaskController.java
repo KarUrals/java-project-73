@@ -12,18 +12,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-
-import javax.validation.Valid;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.security.access.prepost.PreAuthorize;
+import jakarta.validation.Valid;
 
 import static hexlet.code.controller.TaskController.TASK_CONTROLLER_PATH;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -35,17 +34,16 @@ public class TaskController {
     public static final String TASK_CONTROLLER_PATH = "/tasks";
     public static final String ID = "/{id}";
     private static final String AUTHORIZED_USERS_ONLY = "isAuthenticated()";
-
-    private final TaskService taskService;
-
     private static final String TASK_CREATOR =
             "@taskRepository.findById(#id).get().getAuthor().getEmail() == authentication.getName()";
+
+    private final TaskService taskService;
 
     @Operation(summary = "Create new task")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Task created",
-                    content = @Content(mediaType = "application/json",
-                                       schema = @Schema(implementation = Task.class))),
+                         content = @Content(mediaType = "application/json",
+                         schema = @Schema(implementation = Task.class))),
             @ApiResponse(responseCode = "422", description = "Request contains invalid data"),
             @ApiResponse(responseCode = "401", description = "Unauthorized request")
     })
@@ -61,8 +59,8 @@ public class TaskController {
     @Operation(summary = "Get task by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Task found",
-                    content = @Content(mediaType = "application/json",
-                                       schema = @Schema(implementation = Task.class))),
+                         content = @Content(mediaType = "application/json",
+                         schema = @Schema(implementation = Task.class))),
             @ApiResponse(responseCode = "404", description = "Task with that ID not found")
     })
     @GetMapping(ID)
@@ -74,8 +72,8 @@ public class TaskController {
 
     @Operation(summary = "Get list of all tasks")
     @ApiResponse(responseCode = "200", description = "List of all tasks",
-            content = @Content(mediaType = "application/json",
-                               schema = @Schema(implementation = Task.class)))
+                 content = @Content(mediaType = "application/json",
+                 schema = @Schema(implementation = Task.class)))
     @GetMapping()
     public Iterable<Task> getFilteredTasks(
             @Parameter(description = "Filtering options", hidden = true)
@@ -86,8 +84,8 @@ public class TaskController {
     @Operation(summary = "Update existing task by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Task updated",
-                    content = @Content(mediaType = "application/json",
-                                       schema = @Schema(implementation = Task.class))),
+                         content = @Content(mediaType = "application/json",
+                         schema = @Schema(implementation = Task.class))),
             @ApiResponse(responseCode = "404", description = "Task with that ID not found"),
             @ApiResponse(responseCode = "422", description = "Request contains invalid data"),
             @ApiResponse(responseCode = "401", description = "Unauthorized request")

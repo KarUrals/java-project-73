@@ -1,4 +1,4 @@
-package hexlet.code.service.implementation;
+package hexlet.code.service.impl;
 
 import com.querydsl.core.types.Predicate;
 import hexlet.code.dto.TaskDto;
@@ -11,16 +11,14 @@ import hexlet.code.service.LabelService;
 import hexlet.code.service.TaskService;
 import hexlet.code.service.TaskStatusService;
 import hexlet.code.service.UserService;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
@@ -38,7 +36,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public Task getTaskById(long id) {
         return taskRepository.findById(id)
-                .orElseThrow();
+                .orElseThrow(NoSuchElementException::new);
     }
 
     @Override
@@ -50,6 +48,8 @@ public class TaskServiceImpl implements TaskService {
     public Task updateTask(long id, TaskDto taskDto) {
         final Task taskToUpdate = createTaskFromDto(taskDto);
         taskToUpdate.setId(id);
+        taskToUpdate.setAuthor(getTaskById(id).getAuthor());
+        taskToUpdate.setCreatedAt(getTaskById(id).getCreatedAt());
         return taskRepository.save(taskToUpdate);
     }
 

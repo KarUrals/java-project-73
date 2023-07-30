@@ -1,12 +1,11 @@
 package hexlet.code.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -19,9 +18,6 @@ public class TaskDto {
 
     @NotNull
     private Long taskStatusId;
-
-    @NotNull
-    private Long authorId;
 
     private Long executorId;
 

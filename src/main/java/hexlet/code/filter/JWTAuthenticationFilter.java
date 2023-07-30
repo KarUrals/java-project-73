@@ -1,12 +1,5 @@
 package hexlet.code.filter;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.stream.Collectors;
-import javax.servlet.FilterChain;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.component.JWTUtils;
 import hexlet.code.dto.LoginDto;
@@ -19,7 +12,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final JWTUtils jwtUtils;

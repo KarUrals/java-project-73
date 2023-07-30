@@ -1,29 +1,29 @@
 package hexlet.code.entity;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.Builder;
 import org.hibernate.annotations.CreationTimestamp;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.Date;
 import java.util.Set;
 
-import static javax.persistence.GenerationType.IDENTITY;
-import static javax.persistence.TemporalType.TIMESTAMP;
+import static jakarta.persistence.GenerationType.IDENTITY;
+import static jakarta.persistence.TemporalType.TIMESTAMP;
 
 @Entity
 @Table(name = "tasks")
@@ -57,11 +57,19 @@ public class Task {
     @JoinColumn(name = "executor_id")
     private User executor;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinColumn(name = "labels_id")
+    @ManyToMany
+    @JoinTable(name = "task_label",
+               joinColumns = {@JoinColumn(name = "task_id")},
+               inverseJoinColumns = {@JoinColumn(name = "label_id")})
     private Set<Label> labels;
 
     @CreationTimestamp
     @Temporal(TIMESTAMP)
     private Date createdAt;
+
+    public Task(Long id, @NotNull TaskStatus taskStatus, @NotNull User author) {
+        this.id = id;
+        this.taskStatus = taskStatus;
+        this.author = author;
+    }
 }

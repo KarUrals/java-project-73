@@ -1,32 +1,28 @@
-package hexlet.code.service.implementation;
+package hexlet.code.service.impl;
 
 import hexlet.code.dto.UserDto;
 import hexlet.code.entity.User;
 import hexlet.code.repository.UserRepository;
 import hexlet.code.service.UserService;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
-import static hexlet.code.config.security.SecurityConfig.DEFAULT_AUTHORITIES;
+import java.util.NoSuchElementException;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
-public class UserServiceImpl implements UserService, UserDetailsService {
+@AllArgsConstructor
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public User createNewUser(UserDto userDto) {
+    public User createNewUser(final UserDto userDto) {
         final User user = createUserFromDto(userDto);
         return userRepository.save(user);
     }
@@ -34,7 +30,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public User getUserById(long id) {
         return userRepository.findById(id)
-                .orElseThrow();
+                .orElseThrow(NoSuchElementException::new);
     }
 
     @Override
@@ -63,17 +59,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public User getCurrentUser() {
         return userRepository.findByEmail(getCurrentUserName())
-                .orElseThrow();
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Not found user with 'email': " + username));
-        return new org.springframework.security.core.userdetails.User(
-                user.getEmail(),
-                user.getPassword(),
-                DEFAULT_AUTHORITIES);
+                .orElseThrow(NoSuchElementException::new);
     }
 
     private User createUserFromDto(final UserDto userDto) {

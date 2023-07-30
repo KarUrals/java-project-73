@@ -11,18 +11,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
 
-import javax.validation.Valid;
-
+import jakarta.validation.Valid;
 import java.util.List;
 
 import static hexlet.code.controller.TaskStatusController.TASK_STATUS_CONTROLLER_PATH;
@@ -41,8 +40,8 @@ public class TaskStatusController {
     @Operation(summary = "Create new task status")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Task status created",
-                    content = @Content(mediaType = "application/json",
-                                       schema = @Schema(implementation = TaskStatus.class))),
+                         content = @Content(mediaType = "application/json",
+                         schema = @Schema(implementation = TaskStatus.class))),
             @ApiResponse(responseCode = "422", description = "Request contains invalid data"),
             @ApiResponse(responseCode = "401", description = "Unauthorized request")
     })
@@ -58,8 +57,8 @@ public class TaskStatusController {
     @Operation(summary = "Get task status by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Task status found",
-                    content = @Content(mediaType = "application/json",
-                                       schema = @Schema(implementation = TaskStatus.class))),
+                         content = @Content(mediaType = "application/json",
+                         schema = @Schema(implementation = TaskStatus.class))),
             @ApiResponse(responseCode = "404", description = "Task status with that ID not found")
     })
     @GetMapping(path = ID)
@@ -71,8 +70,8 @@ public class TaskStatusController {
 
     @Operation(summary = "Get list of all task statuses")
     @ApiResponse(responseCode = "200", description = "List of all task statuses",
-            content = @Content(mediaType = "application/json",
-                               schema = @Schema(implementation = TaskStatus.class)))
+                 content = @Content(mediaType = "application/json",
+                 schema = @Schema(implementation = TaskStatus.class)))
     @GetMapping()
     public List<TaskStatus> getAllTaskStatuses() {
         return taskStatusService.getAllTaskStatuses();
@@ -81,8 +80,8 @@ public class TaskStatusController {
     @Operation(summary = "Update existing task status by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Task status updated",
-                    content = @Content(mediaType = "application/json",
-                                       schema = @Schema(implementation = TaskStatus.class))),
+                         content = @Content(mediaType = "application/json",
+                         schema = @Schema(implementation = TaskStatus.class))),
             @ApiResponse(responseCode = "404", description = "Task status with that ID not found"),
             @ApiResponse(responseCode = "422", description = "Request contains invalid data"),
             @ApiResponse(responseCode = "401", description = "Unauthorized request")
