@@ -88,18 +88,6 @@ class LabelControllerTest {
         assertEquals(EMPTY_REPOSITORY_SIZE, labelRepository.count());
     }
 
-//    @Test
-    void testTwiceCreateTheSameLabelFail() throws Exception {
-        assertEquals(EMPTY_REPOSITORY_SIZE, labelRepository.count());
-
-        utils.createNewLabel(FIRST_LABEL, existingUserEmail)
-                .andExpect(status().isCreated());
-        utils.createNewLabel(FIRST_LABEL, existingUserEmail)
-                .andExpect(status().isUnprocessableEntity());
-
-        assertEquals(ONE_ITEM_REPOSITORY_SIZE, labelRepository.count());
-    }
-
     @Test
     void testCreateNewLabelUnauthorizedFail() throws Exception {
         assertEquals(EMPTY_REPOSITORY_SIZE, labelRepository.count());

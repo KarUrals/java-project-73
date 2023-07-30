@@ -1,8 +1,6 @@
 package hexlet.code.controller;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.config.SpringConfigForIT;
-import hexlet.code.entity.TaskStatus;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.utils.TestUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -17,7 +15,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.List;
 import java.util.NoSuchElementException;
 
 import static hexlet.code.config.SpringConfigForIT.TEST_PROFILE;
@@ -30,7 +27,6 @@ import static hexlet.code.utils.TestUtils.NEW_TASK_STATUS;
 import static hexlet.code.utils.TestUtils.NOT_VALID_TASK_STATUS;
 import static hexlet.code.utils.TestUtils.ONE_ITEM_REPOSITORY_SIZE;
 import static hexlet.code.utils.TestUtils.asJson;
-import static hexlet.code.utils.TestUtils.getInfoFromJson;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -83,18 +79,6 @@ class TaskStatusControllerTest {
         assertEquals(EMPTY_REPOSITORY_SIZE, taskStatusRepository.count());
     }
 
-//    @Test
-    void testTwiceCreateTheSameTaskStatusFail() throws Exception {
-        assertEquals(EMPTY_REPOSITORY_SIZE, taskStatusRepository.count());
-
-        utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail)
-                .andExpect(status().isCreated());
-        utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail)
-                .andExpect(status().isUnprocessableEntity());
-
-        assertEquals(ONE_ITEM_REPOSITORY_SIZE, taskStatusRepository.count());
-    }
-
     @Test
     void testCreateNewTaskStatusUnauthorizedFail() throws Exception {
         assertEquals(EMPTY_REPOSITORY_SIZE, taskStatusRepository.count());
@@ -120,37 +104,6 @@ class TaskStatusControllerTest {
         public void createFirstLabel() throws Exception {
             utils.createNewTaskStatus(NEW_TASK_STATUS, existingUserEmail);
             taskStatusId = taskStatusRepository.findAll().get(0).getId();
-        }
-
-//        @Test
-        void testGetAllTaskStatuses() throws Exception {
-            utils.createNewTaskStatus(AT_WORK_TASK_STATUS, existingUserEmail);
-            final int expectedCount = (int) taskStatusRepository.count();
-
-            final var getRequest = get(TASK_STATUS_CONTROLLER_PATH);
-
-            final var response = utils.performUnauthorizedRequest(getRequest)
-                    .andExpect(status().isOk())
-                    .andReturn()
-                    .getResponse();
-
-            List<TaskStatus> statuses = getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
-            assertEquals(expectedCount, statuses.size());
-        }
-
-//        @Test
-        void testGetTaskStatusById() throws Exception {
-            final var getRequest = get(TASK_STATUS_CONTROLLER_PATH + ID, taskStatusId);
-
-            final var response = utils.performUnauthorizedRequest(getRequest)
-                    .andExpect(status().isOk())
-                    .andReturn()
-                    .getResponse();
-
-            final TaskStatus actualTaskStatus = getInfoFromJson(response.getContentAsString(),
-                                                                new TypeReference<>() { });
-
-            assertEquals(NEW_TASK_STATUS.getName(), actualTaskStatus.getName());
         }
 
         @Test
