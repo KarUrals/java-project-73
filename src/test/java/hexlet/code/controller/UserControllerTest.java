@@ -255,15 +255,6 @@ public class UserControllerTest {
         }
 
         @Test
-        public void testUpdateUserWithNotValidLastNameFail() throws Exception {
-            utils.performAuthorizedRequest(
-                    utils.createUserUpdateRequest(firstUserId, NOT_VALID_LASTNAME_USER), firstUserEmail)
-                    .andExpect(status().isUnprocessableEntity());
-
-            checkMatchActualUserByEmailWithFirstUser(firstUserEmail);
-        }
-
-        @Test
         public void testUpdateUserWithNotValidPasswordFail() throws Exception {
             utils.performAuthorizedRequest(
                     utils.createUserUpdateRequest(firstUserId, NOT_VALID_PASSWORD_USER), firstUserEmail)

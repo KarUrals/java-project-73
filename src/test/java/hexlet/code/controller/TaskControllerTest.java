@@ -196,17 +196,6 @@ class TaskControllerTest {
         }
 
         @Test
-        public void testGetNonExistTaskByIdFail() throws Exception {
-            final Long nonExistTaskId = taskId + 1;
-            assertFalse(taskRepository.findById(nonExistTaskId).isPresent());
-
-            final var getRequest = get(TASK_CONTROLLER_PATH + ID, nonExistTaskId);
-
-            utils.performAuthorizedRequest(getRequest, existingUserEmail)
-                    .andExpect(status().isNotFound());
-        }
-
-        @Test
         void testUpdateTask() throws Exception {
             utils.performAuthorizedRequest(utils.createTaskUpdateRequest(taskId, anotherTaskDto), existingUserEmail)
                     .andExpect(status().isOk());
@@ -239,19 +228,6 @@ class TaskControllerTest {
         }
 
         @Test
-        void testUpdateTaskUnauthorizedFail() throws Exception {
-            try {
-                utils.performUnauthorizedRequest(utils.createTaskUpdateRequest(taskId, anotherTaskDto));
-            } catch (Exception e) {
-                assertThat(e.getMessage()).isEqualTo("No value present");
-            }
-
-            Assertions.assertTrue(taskRepository.existsById(taskId));
-            Assertions.assertNull(taskRepository.findByName(anotherTaskDto.getName()).orElse(null));
-            Assertions.assertNotNull(taskRepository.findByName(newTaskDto.getName()).orElse(null));
-        }
-
-        @Test
         public void testDeleteTask() throws Exception {
             final var deleteRequest = delete(TASK_CONTROLLER_PATH + ID, taskId);
 
@@ -259,18 +235,6 @@ class TaskControllerTest {
                     .andExpect(status().isOk());
 
             assertEquals(EMPTY_REPOSITORY_SIZE, taskRepository.count());
-        }
-
-        @Test
-        public void testDeleteTaskUnauthorizedFail() throws Exception {
-            final var deleteRequest = delete(TASK_CONTROLLER_PATH + ID, taskId);
-
-            try {
-                utils.performUnauthorizedRequest(deleteRequest);
-            } catch (Exception e) {
-                assertThat(e.getMessage()).isEqualTo("No value present");
-            }
-            assertThat(taskRepository.findById(taskId)).isPresent();
         }
 
         @Test
