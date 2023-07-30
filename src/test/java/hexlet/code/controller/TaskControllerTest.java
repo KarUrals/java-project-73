@@ -184,55 +184,6 @@ class TaskControllerTest {
             assertEquals(expectedCount, tasks.size());
         }
 
-//        @Test
-        void testGetFilteredTasks() throws Exception {
-            utils.createNewUser(SECOND_USER);
-            User anotherExistingUser = userRepository.findAll().stream().
-                    filter(Objects::nonNull).skip(1).findFirst().get();
-
-            utils.createNewTaskStatus(AT_WORK_TASK_STATUS, existingUserEmail);
-            TaskStatus anotherExistingTaskStatus = taskStatusRepository.findAll().stream().
-                    filter(Objects::nonNull).skip(1).findFirst().get();
-
-            utils.createNewLabel(SECOND_LABEL, existingUserEmail);
-            Label anotherLabel = labelRepository.findAll().stream().
-                    filter(Objects::nonNull).skip(1).findFirst().get();
-            Set<Long> anotherLabelIdSet = new HashSet<>();
-            anotherLabelIdSet.add(anotherLabel.getId());
-
-            TaskDto anotherStatusDto = buildTaskDto(TASK_NAME, existingUser, anotherExistingTaskStatus, labelsIds);
-            TaskDto anotherAuthorDto = buildTaskDto(TASK_NAME, anotherExistingUser, existingTaskStatus, labelsIds);
-            TaskDto anotherLabelDto = buildTaskDto(TASK_NAME, existingUser, existingTaskStatus, anotherLabelIdSet);
-
-            utils.createNewTask(anotherStatusDto, existingUserEmail);
-            Task taskToFind = taskRepository.findAll().get(1);
-            long taskStatus = taskToFind.getTaskStatus().getId();
-            long executorId = taskToFind.getExecutor().getId();
-            long labelId = taskToFind.getLabels().stream().findFirst().get().getId();
-
-            utils.createNewTask(anotherAuthorDto, existingUserEmail);
-            utils.createNewTask(anotherLabelDto, existingUserEmail);
-
-            final int actualRepositoryCount = (int) taskRepository.count();
-
-            final var getRequest = get(TASK_CONTROLLER_PATH).
-                    queryParam("taskStatus", String.valueOf(taskStatus)).
-                    queryParam("executorId", String.valueOf(executorId)).
-                    queryParam("labels", String.valueOf(labelId));
-
-            final int expectedCountOfFilteredTasks = 1;
-
-            final var response = utils.performAuthorizedRequest(getRequest, existingUserEmail)
-                    .andExpect(status().isOk())
-                    .andReturn()
-                    .getResponse();
-
-            List<Task> tasks = getInfoFromJson(response.getContentAsString(), new TypeReference<>() { });
-
-            assertEquals(expectedCountOfFilteredTasks, tasks.size());
-            assertNotEquals(actualRepositoryCount, tasks.size());
-        }
-
         @Test
         void testGetTaskById() throws Exception {
             final var getRequest = get(TASK_CONTROLLER_PATH + ID, taskId);
@@ -389,7 +340,6 @@ class TaskControllerTest {
                 DEFAULT_TASK_DESCRIPTION,
                 taskStatus.getId(),
                 user.getId(),
-//                user.getId(),
                 labelsIds
         );
     }

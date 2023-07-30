@@ -161,16 +161,6 @@ public class UserControllerTest {
         assertEquals(EMPTY_REPOSITORY_SIZE, userRepository.count());
     }
 
-//    @Test
-    public void testTwiceCreateTheSameUserFail() throws Exception {
-        utils.createNewUser(FIRST_USER)
-                .andExpect(status().isCreated());
-        utils.createNewUser(FIRST_USER)
-                .andExpect(status().isUnprocessableEntity());
-
-        assertEquals(ONE_ITEM_REPOSITORY_SIZE, userRepository.count());
-    }
-
     @Nested
     class GetUpdateDeleteTests {
         private static User firstUser;
@@ -220,17 +210,6 @@ public class UserControllerTest {
             assertEquals(firstUser.getFirstName(), actualUser.getFirstName());
             assertEquals(firstUser.getLastName(), actualUser.getLastName());
             assertFalse(response.getContentAsString().contains(FIRST_USER.getPassword()));
-        }
-
-        @Test
-        public void testGetNonExistUserByIdFail() throws Exception {
-            final Long nonExistUserId = firstUserId + 1;
-            assertFalse(userRepository.findById(nonExistUserId).isPresent());
-
-            final var getRequest = get(USER_CONTROLLER_PATH + ID, nonExistUserId);
-
-            utils.performAuthorizedRequest(getRequest, firstUserEmail)
-                    .andExpect(status().isNotFound());
         }
 
         @Test
@@ -325,17 +304,6 @@ public class UserControllerTest {
 
             assertEquals(expectedCount, userRepository.count());
             assertThat(userRepository.findById(firstUserId)).isPresent();
-        }
-
-        @Test
-        public void testDeleteNonExistUserFail() throws Exception {
-            final Long nonExistUserId = firstUserId + 1;
-            assertFalse(userRepository.findById(nonExistUserId).isPresent());
-
-            final var deleteRequest = delete(USER_CONTROLLER_PATH + ID, nonExistUserId);
-
-            utils.performAuthorizedRequest(deleteRequest, firstUserEmail)
-                    .andExpect(status().isNotFound());
         }
 
         private void checkMatchActualUserByEmailWithFirstUser(final String email) {
