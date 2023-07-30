@@ -113,30 +113,4 @@ public class UserController {
             @PathVariable final long id) {
         userService.deleteUserById(id);
     }
-
-//    @Operation(summary = "Delete user by his id")
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "200", description = "User deleted"),
-//            @ApiResponse(responseCode = "403", description = "Attempting to perform an operation "
-//                    + "for which the user does not have rights"),
-//            @ApiResponse(responseCode = "404", description = "User with that id not found")
-//    })
-//    @DeleteMapping(ID)
-//    @PreAuthorize(ONLY_OWNER_BY_ID)
-//    public void deleteUser(@PathVariable long id) {
-//        userRepository.deleteById(id);
-//    }
-
-
-
-//    @Operation(summary = "Update user by his id")
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "200", description = "User updated"),
-//            @ApiResponse(responseCode = "404", description = "User with that id not found")
-//    })
-//    @PutMapping(ID)
-//    @PreAuthorize(ONLY_OWNER_BY_ID)
-//    public User updateUser(@PathVariable long id, @RequestBody @Valid final UserDto dto) {
-//        return userService.updateUser(id, dto);
-//    }
 }

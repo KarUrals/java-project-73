@@ -55,8 +55,8 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void deleteTaskById(long id) {
-        final Task taskToDelete = getTaskById(id);
-        taskRepository.delete(taskToDelete);
+        getTaskById(id);
+        taskRepository.deleteById(id);
     }
 
     private Task createTaskFromDto(final TaskDto taskDto) {

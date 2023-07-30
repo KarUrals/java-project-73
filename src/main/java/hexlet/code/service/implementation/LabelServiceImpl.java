@@ -43,7 +43,7 @@ public class LabelServiceImpl implements LabelService {
 
     @Override
     public void deleteLabelById(long id) {
-        final Label labelToDelete = getLabelById(id);
-        labelRepository.delete(labelToDelete);
+        getLabelById(id);
+        labelRepository.deleteById(id);
     }
 }

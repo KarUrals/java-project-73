@@ -66,10 +66,4 @@ public class Task {
     @CreationTimestamp
     @Temporal(TIMESTAMP)
     private Date createdAt;
-
-    public Task(Long id, @NotNull TaskStatus taskStatus, @NotNull User author) {
-        this.id = id;
-        this.taskStatus = taskStatus;
-        this.author = author;
-    }
 }

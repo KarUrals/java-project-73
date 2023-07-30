@@ -63,7 +63,7 @@ public class TaskController {
                          schema = @Schema(implementation = Task.class))),
             @ApiResponse(responseCode = "404", description = "Task with that ID not found")
     })
-    @GetMapping(ID)
+    @GetMapping(path = ID)
     public Task getTaskByID(
             @Parameter(description = "ID of task to find")
             @PathVariable long id) {
@@ -90,7 +90,7 @@ public class TaskController {
             @ApiResponse(responseCode = "422", description = "Request contains invalid data"),
             @ApiResponse(responseCode = "401", description = "Unauthorized request")
     })
-    @PutMapping(ID)
+    @PutMapping(path = ID)
     @PreAuthorize(AUTHORIZED_USERS_ONLY)
     public Task updateTask(
             @Parameter(description = "ID of task to update")
@@ -107,7 +107,7 @@ public class TaskController {
             @ApiResponse(responseCode = "401", description = "Unauthorized request"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    @DeleteMapping(ID)
+    @DeleteMapping(path = ID)
     @PreAuthorize(TASK_CREATOR)
     public void deleteTask(
             @Parameter(description = "ID of task to delete")

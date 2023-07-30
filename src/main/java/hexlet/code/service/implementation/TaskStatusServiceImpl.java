@@ -43,7 +43,7 @@ public class TaskStatusServiceImpl implements TaskStatusService {
 
     @Override
     public void deleteTaskStatusById(long id) {
-        final TaskStatus taskStatusToDelete = getTaskStatusById(id);
-        taskStatusRepository.delete(taskStatusToDelete);
+        getTaskStatusById(id);
+        taskStatusRepository.deleteById(id);
     }
 }
