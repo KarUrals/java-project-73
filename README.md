@@ -1,7 +1,8 @@
 # Task Manager
 This project is a task management system. It allows you to set tasks, assign performers and change their statuses. Registration and authentication are required to work with the system.
 
-The site is deployed on [Render](https://task-manager-hrgi.onrender.com)
+The site is deployed on [Render](https://task-manager-hrgi.onrender.com)<br>
+[OpenApi Spec](https://task-manager-hrgi.onrender.com/swagger-ui/index.html#/)
 ___
 ## Service badges
 
@@ -13,3 +14,11 @@ ___
 |CodeClimate TestCoverage status:| [![Test Coverage](https://api.codeclimate.com/v1/badges/7965ea191cbd0aab3196/test_coverage)](https://codeclimate.com/github/KarUrals/java-project-73/test_coverage)                                      |
 
 ___
+## Development
+```bash
+# http://localhost:5001
+make start
+make install
+make generate-migrations
+make test
+```
