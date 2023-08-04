@@ -78,7 +78,7 @@ public class TaskController {
     public Iterable<Task> getFilteredTasks(
             @Parameter(description = "Filtering options", hidden = true)
             @QuerydslPredicate(root = Task.class) Predicate predicate) {
-        return taskService.getAllTasks(predicate);
+        return predicate == null ? taskService.getAllTasks() : taskService.getAllTasks(predicate);
     }
 
     @Operation(summary = "Update existing task by ID")

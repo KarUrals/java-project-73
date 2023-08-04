@@ -41,6 +41,11 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    public Iterable<Task> getAllTasks() {
+        return taskRepository.findAll();
+    }
+
+    @Override
     public Iterable<Task> getAllTasks(Predicate predicate) {
         return taskRepository.findAll(predicate);
     }

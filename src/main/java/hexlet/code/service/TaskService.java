@@ -7,6 +7,7 @@ import hexlet.code.entity.Task;
 public interface TaskService {
     Task createNewTask(TaskDto taskDto);
     Task getTaskById(long id);
+    Iterable<Task> getAllTasks();
     Iterable<Task> getAllTasks(Predicate predicate);
     Task updateTask(long id, TaskDto taskDto);
     void deleteTaskById(long id);
