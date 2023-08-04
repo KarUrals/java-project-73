@@ -5,18 +5,19 @@ base-url: /api
 
 spring:
   application:
-    name: app
+    name: taskManager
 
-  profiles:
-    active: ${APP_ENV:dev}
+#  profiles:
+#    active: ${APP_ENV:dev}
 
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
   jpa:
+    show-sql: true
     hibernate:
-      ddl-auto: none
+        ddl-auto: create-drop
 
 
   mvc:

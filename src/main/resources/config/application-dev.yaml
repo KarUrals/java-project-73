@@ -1,3 +1,11 @@
+server:
+  error:
+    include-stacktrace: on_param
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
 spring:
   datasource:
     url: "jdbc:h2:./taskManager"
@@ -5,14 +13,17 @@ spring:
     password: ""
     driverClassName: org.h2.Driver
 
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-      settings:
-      #  trace: false
-        web-allow-others: true
-
   jpa:
     show-sql: true
 
+  h2:
+    console:
+      enabled: true
+      path: /h2-console/
+      settings:
+        web-allow-others: true
+
+logging:
+  level:
+    root: INFO
+    web: DEBUG
