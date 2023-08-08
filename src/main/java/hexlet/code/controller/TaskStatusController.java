@@ -45,7 +45,7 @@ public class TaskStatusController {
             @ApiResponse(responseCode = "422", description = "Request contains invalid data"),
             @ApiResponse(responseCode = "401", description = "Unauthorized request")
     })
-    @PostMapping()
+    @PostMapping("/")
     @ResponseStatus(CREATED)
     @PreAuthorize(AUTHORIZED_USERS_ONLY)
     public TaskStatus createNewTaskStatus(
@@ -72,7 +72,7 @@ public class TaskStatusController {
     @ApiResponse(responseCode = "200", description = "List of all task statuses",
                  content = @Content(mediaType = "application/json",
                  schema = @Schema(implementation = TaskStatus.class)))
-    @GetMapping()
+    @GetMapping("/")
     public List<TaskStatus> getAllTaskStatuses() {
         return taskStatusService.getAllTaskStatuses();
     }

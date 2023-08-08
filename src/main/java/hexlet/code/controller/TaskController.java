@@ -47,7 +47,7 @@ public class TaskController {
             @ApiResponse(responseCode = "422", description = "Request contains invalid data"),
             @ApiResponse(responseCode = "401", description = "Unauthorized request")
     })
-    @PostMapping()
+    @PostMapping("/")
     @ResponseStatus(CREATED)
     @PreAuthorize(AUTHORIZED_USERS_ONLY)
     public Task createNewTask(
@@ -74,7 +74,7 @@ public class TaskController {
     @ApiResponse(responseCode = "200", description = "List of all tasks",
                  content = @Content(mediaType = "application/json",
                  schema = @Schema(implementation = Task.class)))
-    @GetMapping()
+    @GetMapping("/")
     public Iterable<Task> getFilteredTasks(
             @Parameter(description = "Filtering options", hidden = true)
             @QuerydslPredicate(root = Task.class) Predicate predicate) {

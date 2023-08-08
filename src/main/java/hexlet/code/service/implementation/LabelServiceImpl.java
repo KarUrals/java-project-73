@@ -4,14 +4,14 @@ import hexlet.code.dto.LabelDto;
 import hexlet.code.entity.Label;
 import hexlet.code.repository.LabelRepository;
 import hexlet.code.service.LabelService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class LabelServiceImpl implements LabelService {
 
     private final LabelRepository labelRepository;

@@ -48,7 +48,7 @@ public class UserController {
                          schema = @Schema(implementation = User.class))),
             @ApiResponse(responseCode = "422", description = "Request contains invalid data")
     })
-    @PostMapping()
+    @PostMapping("/")
     @ResponseStatus(CREATED)
     public User createNewUser(
             @Parameter(description = "User to save", schema = @Schema(implementation = UserDto.class))
@@ -74,7 +74,7 @@ public class UserController {
     @ApiResponse(responseCode = "200", description = "List of all users",
                  content = @Content(mediaType = "application/json",
                  schema = @Schema(implementation = User.class)))
-    @GetMapping()
+    @GetMapping("/")
     public List<User> getAllUsers() {
         return userService.getAllUsers();
     }
